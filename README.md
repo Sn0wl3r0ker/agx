@@ -32,7 +32,7 @@ docker exec -it ros_cuda_container bash
 docker start ros_cuda_container
 docker stop ros_cuda_container
 ```
-# ARM64
+# Nvidia AGX Orin
 ## 測試官方映像
 ``` bash
 docker run -it --gpus all -e DISPLAY=host.docker.internal:0.0 -v /tmp/.X11-unix:/tmp/.X11-unix --platform linux/arm64 nvcr.io/nvidia/l4t-base:35.4.1
