@@ -71,6 +71,6 @@ echo "=== Environment ready ==="
 if [ $# -gt 0 ]; then
     exec "$@"
 else
-    # 在開發階段保持容器活著
+    # 沒有傳入命令時保持容器活著
     exec bash -c "while true; do sleep 1000; done"
 fi
