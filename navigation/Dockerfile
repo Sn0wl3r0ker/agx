@@ -33,7 +33,7 @@ RUN mkdir -p ${WORKSPACE}/hdl_ws/src \
 # -------------------------------------------------
 # 複製 entrypoint
 # -------------------------------------------------
-COPY navigation/entrypoint.sh /root/entrypoint.sh
+COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 
 ENTRYPOINT ["/root/entrypoint.sh"]
