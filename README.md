@@ -68,5 +68,11 @@ docker run -it --rm \
   bash
 
 # docker run -it --rm --network=host --privileged --runtime=nvidia -e DISPLAY=$DISPLAY -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all -v /tmp/.X11-unix:/tmp/.X11-unix:rw -v /dev:/dev -v /var/run/dbus:/var/run/dbus -v /run/udev:/run/udev -v /sys/class/gpio:/sys/class/gpio -v /sys/devices:/sys/devices -v /proc/device-tree:/proc/device-tree -v /etc/localtime:/etc/localtime:ro nycusystemlab/l4t-noetic bash
-
+```
+## 導航
+```bash
+  # 建置映像
+  docker compose build
+  # 啟動容器
+  docker compose up -d
 ```
