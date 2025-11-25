@@ -33,10 +33,12 @@ docker start ros_cuda_container
 docker stop ros_cuda_container
 ```
 # Nvidia AGX Orin
-## 導航
+## 建置映像並啟動容器
 ```bash
-  # 建置映像並啟動容器(背景編譯)
-  docker compose up -d
-  # 進入容器
-  docker exec -it navigation bash
+# 背景編譯
+docker compose up -d
+```
+## 進入容器
+```bash
+docker exec -it navigation bash
 ```
