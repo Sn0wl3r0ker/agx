@@ -26,7 +26,7 @@ if [ -d "${HDL_WS}/src" ]; then
     if [ ! -f "${HDL_WS}/devel/setup.bash" ]; then
         echo ">>> hdl_ws not built. Building now..."
         cd ${HDL_WS}
-        catkin_make -DCMAKE_BUILD_TYPE=Release -DBUILD_VGICP_CUDA=ON
+        catkin_make -j$(nproc)
     else
         echo ">>> hdl_ws already built. Skipping build."
     fi

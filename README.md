@@ -71,8 +71,10 @@ docker run -it --rm \
 ```
 ## 導航
 ```bash
-  # 建置映像
-  docker compose build
-  # 啟動容器
+  # 建置映像並啟動容器
   docker compose up -d
+  # 容器內編譯(只需一次)
+  docker exec -it navigation /root/entrypoint.sh
+  # 進入容器
+  docker exec -it navigation bash
 ```
