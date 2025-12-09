@@ -34,15 +34,20 @@ services:
   # =========================================
   # 在 PC 上我們使用現成的 x86 bridge 映像檔來節省編譯時間
   bridge:
-    image: osrf/ros:foxy-ros1-bridge # 或者自行編譯 Humble bridge
-    # 注意：PC 上完美的 Humble Bridge 映像檔較少，
-    # 這裡建議先用 control 和 planning 開發，若需通訊測試建議自行編譯 bridge
+    image: osrf/ros:foxy-ros1-bridge
     container_name: pc_bridge
     network_mode: "host"
     environment:
       - ROS_MASTER_URI=http://localhost:11311
       - ROS_IP=127.0.0.1
       - ROS_DOMAIN_ID=0
+    tty: true
+    stdin_open: true
+    # 修改 Command：
+    # 1. source 兩邊環境
+    # 2. 加入 --bridge-all-1to2-topics 強制單向橋接
+    # 3. 加入 --bridge-all-2to1-topics 強制反向橋接 (預防 ROS 1 也偵測不到 ROS 2)
+    command: bash -c "source /opt/ros/noetic/setup.bash && source /opt/ros/foxy/setup.bash && ros2 run ros1_bridge dynamic_bridge --bridge-all-1to2-topics --bridge-all-2to1-topics"
 
   # =========================================
   # 3. ROS 2 高階規劃 (Planning)

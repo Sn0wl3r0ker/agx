@@ -17,6 +17,13 @@ if [ -f "/opt/ros/${ROS_DISTRO}/setup.bash" ]; then
     source /opt/ros/${ROS_DISTRO}/setup.bash
 fi
 
+BASHRC_FILE="${WORKSPACE}/.bashrc"
+
+# ROS
+if ! grep -Fxq "source /opt/ros/${ROS_DISTRO}/setup.bash" $BASHRC_FILE; then
+    echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> $BASHRC_FILE
+fi
+
 # -------------------------------------------------
 # Build HDL Workspace (optional)
 # -------------------------------------------------
@@ -64,12 +71,6 @@ fi
 # -------------------------------------------------
 # Append sourcing to .bashrc for future shells
 # -------------------------------------------------
-BASHRC_FILE="${WORKSPACE}/.bashrc"
-
-# ROS
-if ! grep -Fxq "source /opt/ros/${ROS_DISTRO}/setup.bash" $BASHRC_FILE; then
-    echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> $BASHRC_FILE
-fi
 
 # HDL workspace
 if [ -f "${HDL_WS}/devel/setup.bash" ]; then
