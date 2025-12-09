@@ -38,7 +38,7 @@ agx_ros/
 ### 硬體
 - **Robot:** NVIDIA Jetson AGX Orin (JetPack 6.0+)
 - **Workstation:** PC / Laptop (Ubuntu 20.04 或 22.04)
-- **Sensors:** RealSense D435i, 3D LiDAR, Arduino Microcontroller
+- **Sensors:** RealSense D455, 3D LiDAR, Arduino Microcontroller
 
 ### 軟體
 - Docker Engine
@@ -88,6 +88,7 @@ docker exec -it agx_control_ros1 bash
 ```
 
 🗓️ 專案規劃 (Roadmap)
+
 [x] Phase 1: 建立 AGX JetPack 6 混合容器架構 (ROS 1 + ROS 2)
 
 [x] Phase 2: 完成硬體驅動 (Arduino, RealSense) 與 Docker 整合
