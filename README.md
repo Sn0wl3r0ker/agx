@@ -162,4 +162,27 @@ The LiDAR uses Ethernet UDP. You must configure the AGX's wired interface (`eth0
   - [ ] **Phase 5**: Deploy Nav2 Stack and bridge with SLAM maps
   - [ ] **Phase 6**: Integrate VLM/RL models into ROS 2 nodes for AI Navigation
 
+### 👥 For New Team Members
+
+If you want to deploy code from your own PC to the AGX, follow these steps:
+
+1.  **Generate your SSH Key** (If you haven't already):
+    ```bash
+    # Run on your PC
+    ssh-keygen -t ed25519 -C "your_name@pc"
+    ```
+
+2.  **Register your Key on AGX**:
+    Ask the administrator for the AGX IP and password, then run:
+    ```bash
+    # Replace <AGX_IP> with actual IP
+    ssh-copy-id systemlabagx@<AGX_IP>
+    ```
+
+3.  **Verify**:
+    You should be able to login without a password:
+    ```bash
+    ssh systemlabagx@<AGX_IP>
+    ```
+
 **Maintainer**: NYCUSystemLab
