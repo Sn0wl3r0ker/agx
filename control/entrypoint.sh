@@ -70,17 +70,17 @@ fi
 # 2. 依序處理所有工作空間
 # -------------------------------------------------
 
-# (A) Keyboard Control Workspace
-build_workspace "${WORKSPACE}/keyboard_control_ws" "catkin_make"
-
+# (A)  HDL Workspace
+build_workspace "${WORKSPACE}/hdl_ws" "catkin_make"
 # (B) LiDAR Workspace
 build_workspace "${WORKSPACE}/lidar_ws" "catkin_make_isolated"
 
 # (C) Realsense Workspace
 build_workspace "${WORKSPACE}/realsense_ws" "catkin_make"
 
-# (D) HDL Workspace
-build_workspace "${WORKSPACE}/hdl_ws" "catkin_make"
+# (D)Keyboard Control Workspace
+build_workspace "${WORKSPACE}/keyboard_control_ws" "catkin_make"
+
 
 # -------------------------------------------------
 # 3. 執行指令
