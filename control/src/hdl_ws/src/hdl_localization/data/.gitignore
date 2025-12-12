@@ -1,0 +1,3 @@
+# .gitignore
+*.pcd
+!0305_b1_map.pcd

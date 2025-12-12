@@ -1,7 +1,6 @@
-# 1. 加入這行：預設所有文字檔都自動正規化 (存成 LF，取出時看系統)
+# 預設所有文字檔都自動正規化 (存成 LF，取出時看系統)
 * text=auto
 
-# 2. 以下是你原本的強制設定 (這些會覆蓋上面的預設值，強制轉為 LF)
 # 確保腳本類在任何系統取出時，都強制維持 LF (為了 Docker/AGX)
 *.sh text eol=lf
 *.bash text eol=lf
@@ -11,6 +10,4 @@ Dockerfile text eol=lf
 *.json text eol=lf
 *.xml text eol=lf
 
-# 特別指定 .gitignore 也要強制 LF (選用，為了消除你的強迫症)
-.gitignore text eol=lf
 .gitattributes text eol=lf
