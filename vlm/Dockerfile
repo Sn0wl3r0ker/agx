@@ -1,21 +1,31 @@
-# syntax=docker/dockerfile:1.6
+# ./vlm/Dockerfile
 
-# ============================================
-# PointCloud Layer for Jetson AGX Orin
-# Base: nycusystemlab/agx:latest (from nvcr.io/nvidia/l4t-base:35.4.1)
-# ============================================
-
-FROM nycusystemlab/agx:latest
+# 1. 基底映像檔
+FROM nvcr.io/nvidia/isaac/ros:aarch64-ros2_humble_4c0c55dddd2bbcc3e8d5f9753bee634c
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV ROS_DISTRO=noetic
-ENV WORKSPACE=/root
 
-# RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/arm64/cuda-ubuntu2004.pin
-#     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-#     https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-tegra-repo-ubuntu2004-11-8-local_11.8.0-1_arm64.deb
-#     dpkg -i cuda-tegra-repo-ubuntu2004-11-8-local_11.8.0-1_arm64.deb
-#     cp /var/cuda-tegra-repo-ubuntu2004-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
-#     apt-get update
-#     sudo apt-get install -y cuda-toolkit-11-8
+# 2. 安裝 RealSense 驅動 (這是 buildx 最重要的任務)
+RUN apt-get update && apt-get install -y \
+    ros-humble-realsense2-camera \
+    ros-humble-diagnostic-updater \
+    ros-humble-xacro \
+    git-lfs \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
 
+# 3. (進階技巧) 預先安裝 Isaac ROS 常見的 apt 依賴
+# 這裡我們手動列出 Isaac ROS 常用的依賴，省去 rosdep 的時間
+RUN apt-get update && apt-get install -y \
+    ros-humble-isaac-ros-common \
+    ros-humble-isaac-ros-apriltag \
+    ros-humble-isaac-ros-image-pipeline \
+    ros-humble-isaac-ros-nitros \
+    # 這裡可以加入更多你已知需要的包
+    && rm -rf /var/lib/apt/lists/*
+
+# 4. 設定工作目錄
+WORKDIR /workspaces/isaac_ros-dev
+
+# 5. 把 source setup.bash 寫入，確保一進去就有環境
+RUN echo "source /workspaces/isaac_ros-dev/install/setup.bash" >> /root/.bashrc
