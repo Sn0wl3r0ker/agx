@@ -32,4 +32,4 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
 EXPOSE 8765
 
 # 啟動指令
-CMD ["bash", "-c", "source /opt/ros/${ROS_DISTRO}/setup.bash && ros2 launch foxglove_bridge foxglove_bridge_launch.xml send_buffer_limit:=50000000"]
+CMD ["bash", "-c", "source /opt/ros/${ROS_DISTRO}/setup.bash && ros2 launch foxglove_bridge foxglove_bridge_launch.xml send_buffer_limit:=20000000"]
