@@ -78,26 +78,84 @@ Choose the mode that fits your current task.
     ```bash
     docker context use default
     ```
-
+> **Note**: In this mode, containers use the code baked into the Docker Image. Local source files on the AGX are **not** mounted.
 -----
 
 ## 📊 Visualization (Foxglove Studio)
 
+
+
+This project uses **Foxglove Studio** instead of RViz for remote monitoring.
+
+
+
 1.  **Open Foxglove Studio** (On PC).
+
 2.  **Connection Setup**:
+
       * Source: `Foxglove WebSocket`
-      * URL: `ws://<AGX_IP>:8765`
-3.  **Troubleshooting**: If topics appear but no data shows, set QoS to **Reliable**.
+
+      * URL: `ws://<AGX_IP>:8765` (AGX WiFi IP)
+
+3.  **Common Topics**:
+
+      * `Map`: `/globalmap` (PointCloud2)
+
+      * `LiDAR`: `/velodyne_points` (PointCloud2)
+
+      * `Path`: `/global_path` (MarkerArray)
+
+      * `Robot`: `/tf`
+
+
+
+> **Tip**: If connected but no data appears, check if the Topic QoS settings in Foxglove are set to **Reliable**.
+
+
 
 -----
 
-## 📝 Hardware Configuration
 
-  * **LiDAR IP**: `192.168.1.201`
-  * **AGX eth0 IP**: `192.168.1.77` (Must be static)
-  * **Docker Network**: Uses `host` mode for maximum performance (no NAT).
+
+## 📝 Hardware Notes
+
+
+
+### Velodyne LiDAR Setup
+
+
+
+The LiDAR uses Ethernet UDP. You must configure the AGX's wired interface (`eth0`) to a separate subnet.
+
+
+
+  * **LiDAR IP**: `192.168.1.201` (Default)
+
+  * **AGX eth0 IP**: `192.168.1.x` (Manual Static IP, e.g., 77)
+
+  * **Docker Port Mapping**: `2368:2368/udp`
+
+
 
 -----
+
+
+
+## 🗓️ Roadmap
+
+
+
+  - [x] **Phase 1**: Establish AGX JetPack 6 Hybrid Architecture (ROS 1 + ROS 2)
+
+  - [x] **Phase 2**: Implement Buildx Remote Deployment Workflow
+
+  - [x] **Phase 3**: Integrate Hardware Drivers (Velodyne, RealSense) & Docker Network Passthrough
+
+  - [x] **Phase 4**: Replace RViz with Foxglove Studio for Web-based Viz
+
+  - [ ] **Phase 5**: Deploy Nav2 Stack and bridge with SLAM maps
+
+  - [ ] **Phase 6**: Integrate VLM/RL models into ROS 2 nodes for AI Navigation
 
 ## 👥 For New Team Members (One-Time Setup)
 
