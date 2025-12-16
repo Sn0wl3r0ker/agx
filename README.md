@@ -59,7 +59,6 @@ Choose the mode that fits your current task.
       * **C++**: Enter container -\> Compile.
         ```bash
         make join service=control
-        # Inside: cd /root/hdl_ws && catkin_make
         ```
 
 ### Mode B: Remote Deployment (PC -\> AGX)
