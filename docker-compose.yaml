@@ -8,7 +8,6 @@ services:
       context: ./control
       dockerfile: Dockerfile
     image: agx_ros/control
-    # [修改] 名稱優化
     container_name: control
     networks:
       - ros_net
@@ -17,13 +16,15 @@ services:
       - "8308:8308/udp"  # LiDAR 狀態資料 (選用)
     privileged: true
     environment:
-      # [修改] Master 指向自己 (新名稱)
       - ROS_MASTER_URI=http://control:11311
-      # [修改] Hostname 優化
       - ROS_HOSTNAME=control
+      # [修改] GUI 顯示設定
       - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/tmp/.docker.xauth
     volumes:
+      # [修改] 掛載 X11 Socket 與 安全憑證
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
     entrypoint: ["/root/entrypoint.sh"]
     tty: true
     stdin_open: true
@@ -37,24 +38,16 @@ services:
       context: ./bridge
       dockerfile: Dockerfile
     image: agx_ros/bridge:latest
-    # [修改] 名稱優化
     container_name: bridge
-    
     restart: on-failure
-    
     networks:
       - ros_net
-    
     environment:
-      # [修改] 指向新的 Control 容器名稱
       - ROS_MASTER_URI=http://control:11311
-      # [修改] Hostname 優化
       - ROS_HOSTNAME=bridge
       - ROS_DOMAIN_ID=0     
-    
     tty: true
     stdin_open: true
-  
     command: >
       bash -c "source /opt/ros/noetic/setup.bash &&
                source /opt/ros/foxy/setup.bash &&
@@ -75,16 +68,20 @@ services:
       context: ./planning
       dockerfile: Dockerfile
     image: agx_ros/planning:latest
-    # [修改] 名稱優化
     container_name: planning
     networks:
       - ros_net
     privileged: true
     environment:
       - ROS_DOMAIN_ID=0
-      # [修改] Hostname 優化
       - ROS_HOSTNAME=planning
+      # [修改] GUI 顯示設定
       - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/tmp/.docker.xauth
+    volumes:
+      # [修改] 補上這裡原本缺少的掛載，否則無法顯示
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
     tty: true
     stdin_open: true
 
@@ -97,7 +94,6 @@ services:
       context: ./foxglove
       dockerfile: Dockerfile
     image: agx_ros/visualization:latest
-    # [修改] 名稱優化
     container_name: foxglove
     networks:
       - ros_net
@@ -105,46 +101,42 @@ services:
       - "8765:8765"
     environment:
       - ROS_DOMAIN_ID=0
-      # [修改] Hostname 優化
       - ROS_HOSTNAME=foxglove
     restart: unless-stopped
-    
-# === 新增：Isaac ROS 視覺加速服務 ===
+    command: >
+      /bin/bash -c "source /opt/ros/humble/setup.bash &&
+      ros2 run foxglove_bridge foxglove_bridge --ros-args -p send_buffer_limit:=100000000"
+      
+  # =========================================
+  # 5. Isaac ROS 視覺加速服務
+  # =========================================
   isaac_ros:
-    # 基礎建置設定
     build:
       context: ./vlm
       dockerfile: Dockerfile
     image: agx_ros/isaac_ros:latest
     container_name: isaac_ros
     profiles: ["agx_mode"]
-    
-    # 1. 網路設定：加入現有的 ros_net
     networks:
       - ros_net
-    
-    # 2. ROS 通訊設定
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-      - DISPLAY=$DISPLAY
-      - ROS_DOMAIN_ID=0     # 確保跟 bridge/planning 一樣
-      - ROS_HOSTNAME=isaac_ros # 在 ros_net 裡，它叫這個名字
+      - ROS_DOMAIN_ID=0
+      - ROS_HOSTNAME=isaac_ros
       - ISAAC_ROS_WS=/workspaces/isaac_ros-dev
-    
-    # 3. 硬體權限：穿透 Docker Bridge 抓 USB 必需
+      # [修改] 統一使用變數與安全憑證
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/tmp/.docker.xauth
     privileged: true
     runtime: nvidia
-    
-    # 4. 必要的裝置掛載
     volumes:
-      - /dev:/dev  # 讓 Bridge 模式也能抓到 RealSense
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      # [修正] 必須寫死 AGX 上的絕對路徑，不能用 $HOME
-      - /home/systemlabagx/.Xauthority:/root/.Xauthority:rw
+      - /dev:/dev
       - /etc/localtime:/etc/localtime:ro
-      
-      # [提醒] 如果你的 override 檔沒有寫程式碼掛載，記得在這裡補上 (也要用絕對路徑)：
+      # [修改] 統一掛載動態生成的安全憑證，解決權限問題
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      # [提醒] 專案程式碼掛載 (維持你原本的路徑)
       - /home/systemlabagx/disk/workspaces/isaac_ros-dev:/workspaces/isaac_ros-dev
 
     stdin_open: true
