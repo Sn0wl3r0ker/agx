@@ -1,8 +1,9 @@
-# AGX Hybrid Navigation System (ROS 1 Noetic + ROS 2 Humble)
+## AGX Hybrid Navigation System (ROS 1 Noetic + ROS 2 Humble)
 
-  
+![System Architecture](https://img.shields.io/badge/Architecture-Hybrid%20ROS1%2B2-blue) ![Platform](https://img.shields.io/badge/Platform-NVIDIA%20Jetson%20AGX%20Orin-green) ![Docker](https://img.shields.io/badge/Docker-Buildx%20Remote-blueviolet)
 
 This is a **Docker-based** hybrid navigation system designed specifically for the **NVIDIA Jetson AGX Orin (JetPack 6)** platform. The project adopts modern DevOps workflows, enabling cross-compilation on a PC and one-click remote deployment to the edge device.
+
 
 ## 🏗️ System Architecture
 
