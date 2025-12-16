@@ -1,11 +1,3 @@
-沒問題，這樣的結構會更合乎邏輯：**「Workflow 區塊專注於『日常怎麼做』，Setup 區塊專注於『第一次怎麼設定』」**。
-
-這是修改後的 `README.md`，我將 **Mode A/B** 簡化到最核心的操作，並將 Docker Context 的建立步驟移至最底下的 **For New Team Members**。
-
-你可以直接覆蓋目前的 `README.md`：
-
------
-
 # AGX Hybrid Navigation System (ROS 1 Noetic + ROS 2 Humble)
 
   
