@@ -49,6 +49,7 @@ RUN apt-get update && \
     python3-pip \
     net-tools \
     iputils-ping \
+    usbutils \
     && rm -rf /var/lib/apt/lists/*
 
 # =======================================================

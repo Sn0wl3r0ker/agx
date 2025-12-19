@@ -14,7 +14,9 @@ RUN apt-get update && apt-get install -y curl gnupg2 lsb-release \
 RUN apt-get install -y \
     ros-noetic-ros-comm \
     ros-foxy-ros1-bridge \
+    ros-foxy-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 # 4. 預設指令 (也可以在 compose 覆寫)
 CMD ["bash"]
