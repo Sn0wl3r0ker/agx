@@ -9,9 +9,8 @@ services:
       dockerfile: Dockerfile
     image: agx_ros/control
     container_name: control
-    # [修改] 切換為 Host 模式
     network_mode: host
-    # [移除] Host 模式下 ports 無效，直接使用本機端口
+    # Host 模式下 ports 無效，直接使用本機端口
     # ports: ... 
     privileged: true
     environment:
@@ -39,10 +38,8 @@ services:
     image: agx_ros/bridge:latest
     container_name: bridge
     restart: on-failure
-    # [修改] 切換為 Host 模式
     network_mode: host
     environment:
-      # [關鍵修改] 指向本機的 ROS Master
       - ROS_MASTER_URI=http://localhost:11311
       - ROS_HOSTNAME=localhost
       - ROS_DOMAIN_ID=0     
@@ -63,7 +60,6 @@ services:
       dockerfile: Dockerfile
     image: agx_ros/planning:latest
     container_name: planning
-    # [修改] 切換為 Host 模式
     network_mode: host
     privileged: true
     environment:
@@ -87,9 +83,7 @@ services:
       dockerfile: Dockerfile
     image: agx_ros/visualization:latest
     container_name: foxglove
-    # [修改] 切換為 Host 模式
     network_mode: host
-    # [移除] Host 模式下 ports 無效，8765 會直接在本機開啟
     environment:
       - ROS_DOMAIN_ID=0
       - ROS_HOSTNAME=localhost
@@ -108,7 +102,6 @@ services:
     image: agx_ros/isaac_ros:latest
     container_name: isaac_ros
     profiles: ["agx_mode"]
-    # [修改] 切換為 Host 模式 (這是 Isaac ROS 官方強烈建議)
     network_mode: host
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
@@ -131,7 +124,7 @@ services:
     tty: true
     command: /bin/bash -c "while true; do sleep 3600; done"
 
-# [移除] 已經不需要 networks 定義了
+# [移除] 不需要 networks 定義
 # networks:
 #   ros_net:
 #     driver: bridge
