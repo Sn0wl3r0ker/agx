@@ -27,6 +27,8 @@ RUN apt-get update && apt-get install -y \
     ros-humble-isaac-ros-jetson-stats \
     ros-humble-rmw-cyclonedds-cpp \
     ros-humble-isaac-ros-peoplesemseg-models-install \
+    && apt-get remove -y ros-humble-compressed-depth-image-transport \
+    && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 5. 設定工作目錄

@@ -50,7 +50,9 @@ RUN add-apt-repository -y ppa:borglab/gtsam-release-4.1 && \
 RUN git clone -b v2.48.0 https://github.com/IntelRealSense/librealsense.git /tmp/librealsense && \
     cd /tmp/librealsense && mkdir build && cd build && \
     cmake ../ -DCMAKE_BUILD_TYPE=Release -DBUILD_NETWORK_DEVICE=OFF -DBUILD_EXAMPLES=OFF -DBUILD_GRAPHICAL_EXAMPLES=OFF -DFORCE_RSUSB_BACKEND=ON && \
-    make -j$(nproc) && make install && rm -rf /tmp/librealsense
+    make -j$(nproc) && make install && rm -rf /tmp/librealsense && \
+    apt-get remove ros-${ROS_DISTRO}-compressed-depth-image-transport -y
+
 
 # =======================================================
 # 6. 複製程式碼並「預先編譯」 (Production Ready)
@@ -60,7 +62,7 @@ WORKDIR ${WORKSPACE}
 # (A) HDL Workspace
 COPY ./src/hdl_ws/src ${WORKSPACE}/hdl_ws/src
 RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && \
-                  cd ${WORKSPACE}/hdl_ws && catkin_make"
+                  cd ${WORKSPACE}/hdl_ws && catkin_make -j$(nproc)"
 
 # (B) LiDAR Workspace (isolated)
 COPY ./src/lidar_ws/src ${WORKSPACE}/lidar_ws/src
