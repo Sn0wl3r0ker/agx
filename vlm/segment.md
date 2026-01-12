@@ -38,7 +38,7 @@ mkdir -p /workspaces/isaac_ros-dev/isaac_ros_assets/models/peoplesemsegnet/deplo
   --saveEngine=/workspaces/isaac_ros-dev/isaac_ros_assets/models/peoplesemsegnet/deployable_quantized_vanilla_unet_onnx_v2.0/1/model.plan \
   --fp16 \
   --skipInference
-ls -lh /workspaces/isaac_ros-dev/isaac_ros_assets/models/peoplesemsegnet/ deployable_quantized_vanilla_unet_onnx_v2.0/1/model.plan
+ls -lh /workspaces/isaac_ros-dev/isaac_ros_assets/models/peoplesemsegnet/deployable_quantized_vanilla_unet_onnx_v2.0/1/model.plan
 ```
 # Terminal 2啟動
 ```bash 
