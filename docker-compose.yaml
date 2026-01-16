@@ -124,6 +124,37 @@ services:
     tty: true
     command: /bin/bash -c "while true; do sleep 3600; done"
 
+  # =========================================
+  # 6. Nano LLM 服務
+  # =========================================
+  nanollm:
+    image: dustynv/nano_llm:r36.4.0
+    container_name: nanollm
+    runtime: nvidia
+    network_mode: host
+    ipc: host
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - ROS_DOMAIN_ID=0
+      - ROS_HOSTNAME=localhost
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/tmp/.docker.xauth
+    privileged: true
+    volumes:      
+      - /dev:/dev
+      - /run/jtop.stats.sock:/run/jtop.stats.sock
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - /home/systemlabagx/disk/workspaces/data:/data
+      - /home/systemlabagx/disk/workspaces/data/nanollm_models:/data/models
+      # 可選：若你需要與 Isaac ROS 共用 workspace
+      - /home/systemlabagx/disk/workspaces:/workspaces
+    working_dir: /data
+    command: ["bash", "-lc", "sleep infinity"]
+
 # [移除] 不需要 networks 定義
 # networks:
 #   ros_net:
