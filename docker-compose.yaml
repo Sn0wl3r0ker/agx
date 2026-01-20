@@ -127,11 +127,14 @@ services:
   # =========================================
   # 6. Nano LLM 服務 (含 ROS 2 Humble)
   # 參考: https://github.com/dusty-nv/jetson-containers/tree/master/packages/llm/nano_llm
+  # 注意：container_name 改為 nanollm_compose 以避免與手動建立的 nanollm 容器衝突
   # =========================================
   nanollm:
-    # nano_llm:humble 版本，包含 ROS 2 Humble Desktop
-    image: dustynv/nano_llm:humble-r36.3.0
-    container_name: nanollm
+    build:
+      context: ./nanollm
+      dockerfile: Dockerfile
+    image: agx_ros/nanollm:latest
+    container_name: nanollm_compose
     runtime: nvidia
     network_mode: host
     ipc: host
