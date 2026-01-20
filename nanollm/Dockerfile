@@ -33,13 +33,10 @@ RUN pip3 install -U jetson-stats
 #     ros-humble-image-transport \
 #     && rm -rf /var/lib/apt/lists/*
 
-# 5. 安裝額外的 Python 套件
+# 5. 安裝額外的 Python 套件 (不要覆蓋基底映像檔的 numpy 和 opencv)
 RUN pip3 install --no-cache-dir \
-    opencv-python \
     pillow \
-    numpy \
     transformers \
-    torch \
     timm \ 
     accelerate
 
