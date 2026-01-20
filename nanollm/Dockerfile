@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. 安裝 Jetson 監控工具
-RUN pip3 install -U jetson-stats
+RUN pip3 install -U jetson-stats --index-url https://pypi.jetson-ai-lab.io/jp6/cu126
 
 # 4. 安裝額外 ROS 2 Humble 套件（基底已包含 ROS Humble）
 RUN apt-get update && apt-get install -y \
@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 5. 安裝額外的 Python 套件
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --index-url https://pypi.jetson-ai-lab.io/jp6/cu126 \
     opencv-python \
     pillow \
     numpy
