@@ -1,5 +1,6 @@
 # 鍵盤控制
 ``` bash
+rosrun rosserial_python serial_node.py _port:=/dev/ttyUSB0
 rosrun six_wheels_teleop imu_teletop_0908
 ```
 # lidar建圖
