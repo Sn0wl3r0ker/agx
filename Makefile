@@ -58,21 +58,22 @@ check-env:
 		exit 1; \
 	fi
 
-build: check-env ## 🛠️  建置映像檔 (Changed Only)
+build: check-env ## 🛠️  建置映像檔 (用法: make build s=planning)
 	@echo "🔨 Building in [\033[1;33m$(MODE)\033[0m] mode..."
-	@$(COMPOSE_CMD) build
+	@$(COMPOSE_CMD) build $(s)
 
 up: check-env ## 🚀 啟動系統 (Fast Boot)
 	@echo "🚀 Starting services..."
-	@$(COMPOSE_CMD) up -d
+	@$(COMPOSE_CMD) up -d $(s)
 	@echo "✅ System is running. Use 'make logs' to monitor."
 
-rebuild: check-env ## 🔄 強制重建並重啟
+rebuild: check-env ## 🔄 強制重建並重啟 (用法: make rebuild s=planning)
 	@echo "🔄 Rebuilding and Restarting..."
-	@$(COMPOSE_CMD) up -d --build --force-recreate
+	@$(COMPOSE_CMD) up -d --build --force-recreate $(s)
 
 down: ## 🛑 停止系統
 	@echo "🛑 Stopping services..."
+	@$(COMPOSE_CMD) up -d $(s)
 	@$(COMPOSE_CMD) down --remove-orphans
 
 join: ## 🐳 進入容器 (預設: isaac_ros)

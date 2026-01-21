@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y \
     ros-${ROS_DISTRO}-imu-tools \
     libssl-dev libusb-1.0-0-dev libudev-dev pkg-config libpcap-dev \
     software-properties-common \
+    && apt-get remove -y ros-${ROS_DISTRO}-compressed-depth-image-transport \
     && rm -rf /var/lib/apt/lists/*
 
 # =======================================================
@@ -50,8 +51,7 @@ RUN add-apt-repository -y ppa:borglab/gtsam-release-4.1 && \
 RUN git clone -b v2.48.0 https://github.com/IntelRealSense/librealsense.git /tmp/librealsense && \
     cd /tmp/librealsense && mkdir build && cd build && \
     cmake ../ -DCMAKE_BUILD_TYPE=Release -DBUILD_NETWORK_DEVICE=OFF -DBUILD_EXAMPLES=OFF -DBUILD_GRAPHICAL_EXAMPLES=OFF -DFORCE_RSUSB_BACKEND=ON && \
-    make -j$(nproc) && make install && rm -rf /tmp/librealsense && \
-    apt-get remove ros-${ROS_DISTRO}-compressed-depth-image-transport -y
+    make -j$(nproc) && make install && rm -rf /tmp/librealsense
 
 
 # =======================================================
