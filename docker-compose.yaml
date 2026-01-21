@@ -134,7 +134,7 @@ services:
       context: ./nanollm
       dockerfile: Dockerfile
     image: agx_ros/nanollm:latest
-    container_name: nanollm_compose
+    container_name: nanollm
     runtime: nvidia
     network_mode: host
     ipc: host
