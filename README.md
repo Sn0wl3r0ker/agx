@@ -112,7 +112,7 @@ This project uses **Foxglove Studio** instead of RViz for remote monitoring.
 
 
 
-> **Tip**: If connected but no data appears, check if the Topic QoS settings in Foxglove are set to **Reliable**.
+> **Tip**: If connected but no data appears, check if the Topic QoS settings in Foxglove are set to **Reliable**
 
 
 
