@@ -10,11 +10,8 @@ services:
     image: agx_ros/control
     container_name: control
     network_mode: host
-    # Host 模式下 ports 無效，直接使用本機端口
-    # ports: ... 
     privileged: true
     environment:
-      # [關鍵修改] Host 模式下，容器名稱無法解析，必須用 localhost
       - ROS_MASTER_URI=http://localhost:11311
       - ROS_HOSTNAME=localhost
       - DISPLAY=${DISPLAY}
@@ -54,20 +51,29 @@ services:
   # 3. ROS 2 高階規劃 (Planning)
   # =========================================
   planning:
-    platform: ${ARCH:-linux/amd64}
     build:
-      context: ./planning
+      context: ./planning  
       dockerfile: Dockerfile
     image: agx_ros/planning:latest
     container_name: planning
+    profiles: ["agx_mode"] 
     network_mode: host
     privileged: true
+    runtime: nvidia
+    
     environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
       - ROS_DOMAIN_ID=0
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_HOSTNAME=localhost
       - DISPLAY=${DISPLAY}
       - XAUTHORITY=/tmp/.docker.xauth
+    
     volumes:
+      - /dev:/dev
+      - /run/jtop.stats.sock:/run/jtop.stats.sock 
+      - /etc/localtime:/etc/localtime:ro 
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
     tty: true
@@ -77,7 +83,6 @@ services:
   # 4. 資料視覺化 (Foxglove)
   # =========================================
   visualization:
-    platform: ${ARCH:-linux/amd64}
     build:
       context: ./foxglove
       dockerfile: Dockerfile
@@ -107,7 +112,7 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
       - ROS_DOMAIN_ID=0
-      - ROS_HOSTNAME=localhost
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ISAAC_ROS_WS=/workspaces/isaac_ros-dev
       - DISPLAY=${DISPLAY}
       - XAUTHORITY=/tmp/.docker.xauth
@@ -123,8 +128,3 @@ services:
     stdin_open: true
     tty: true
     command: /bin/bash -c "while true; do sleep 3600; done"
-
-# [移除] 不需要 networks 定義
-# networks:
-#   ros_net:
-#     driver: bridge
