@@ -35,34 +35,22 @@ We use a **Makefile** to automate complex Docker commands.
 
 | Command | Description |
 | :--- | :--- |
-| **`make up`** | 🚀 **Start System**. Auto-detects PC/AGX mode. Fast boot. |
+| **`make up`** | 🚀 **Start System**. Auto-detects PC/AGX mode. |
 | **`make build`** | 🛠️ **Build Images**. Run this if you changed `Dockerfile`. |
 | **`make rebuild`** | 🔄 **Rebuild + Start**. Clean restart after updates. |
 | **`make down`** | 🛑 **Stop System**. Stops containers and removes networks. |
 | **`make join`** | 🐳 **Enter Container**. Defaults to `isaac_ros`. |
 | **`make logs`** | 📄 **View Logs**. Real-time logs from all services. |
 
------
+### 🎯 Target Specific Services
 
-## 🛠️ Development Workflow
+You can target specific services to save time (e.g., only rebuilding the planning node).
 
-Choose the mode that fits your current task.
+| Argument | Usage Example | Description |
+| :--- | :--- | :--- |
+| **`s=<name>`** | `make rebuild s=planning` | Applies `up`, `down`, `build`, or `rebuild` to a **single service**. |
+| **`service=<name>`** | `make join service=control` | Specifies which container to enter with `make join`. |
 
-### Mode A: On-Device Development (Hot Reload)
-
-***Best for:** Debugging, parameter tuning, and coding directly on the AGX.*
-
-1.  Connect to AGX using **VS Code Remote - SSH**.
-2.  Start the system:
-    ```bash
-    make up
-    ```
-3.  **Edit & Test**:
-      * **Python**: Save file -\> `docker restart <container>` (or auto-reload if configured).
-      * **C++**: Enter container -\> Compile.
-        ```bash
-        make join service=control
-        ```
 
 ### Mode B: Remote Deployment (PC -\> AGX)
 
