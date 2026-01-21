@@ -75,6 +75,7 @@ env/
 *.pt
 *.pth
 *.onnx
+*.zip
 
 # 系統日誌
 *.log
