@@ -19,6 +19,7 @@ services:
     volumes:
       - /dev:/dev
       - /etc/localtime:/etc/localtime:ro # 同步主機時間
+      - /etc/timezone:/etc/timezone:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
       - /home/systemlabagx/disk/Lun_RL_ws/src/six_wheels_teleop:/root/keyboard_control_ws/src/six_wheels_teleop
@@ -76,6 +77,7 @@ services:
       - /dev:/dev
       - /run/jtop.stats.sock:/run/jtop.stats.sock 
       - /etc/localtime:/etc/localtime:ro 
+      - /etc/timezone:/etc/timezone:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
     tty: true
@@ -124,6 +126,7 @@ services:
       - /dev:/dev
       - /run/jtop.stats.sock:/run/jtop.stats.sock
       - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
       - /home/systemlabagx/disk/workspaces/isaac_ros-dev:/workspaces/isaac_ros-dev
