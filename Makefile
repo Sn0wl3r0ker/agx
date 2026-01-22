@@ -73,8 +73,8 @@ rebuild: check-env ## 🔄 強制重建並重啟 (用法: make rebuild s=plannin
 
 down: ## 🛑 停止系統
 	@echo "🛑 Stopping services..."
-	@$(COMPOSE_CMD) up -d $(s)
-	@$(COMPOSE_CMD) down --remove-orphans
+	@$(COMPOSE_CMD) down --remove-orphans $(s)
+	@echo "✅ Services stopped."
 
 join: ## 🐳 進入容器 (預設: isaac_ros)
 	@echo "🐳 Entering \033[1;32m$(service)\033[0m..."

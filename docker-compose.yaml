@@ -12,11 +12,13 @@ services:
     network_mode: host
     privileged: true
     environment:
-      - ROS_MASTER_URI=http://localhost:11311
-      - ROS_HOSTNAME=localhost
+      - ROS_MASTER_URI=http://${HOST_IP}:11311
+      - ROS_IP=${HOST_IP}
       - DISPLAY=${DISPLAY}
       - XAUTHORITY=/tmp/.docker.xauth
     volumes:
+      - /dev:/dev
+      - /etc/localtime:/etc/localtime:ro # 同步主機時間
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
       - /home/systemlabagx/disk/Lun_RL_ws/src/six_wheels_teleop:/root/keyboard_control_ws/src/six_wheels_teleop
@@ -37,8 +39,8 @@ services:
     restart: on-failure
     network_mode: host
     environment:
-      - ROS_MASTER_URI=http://localhost:11311
-      - ROS_HOSTNAME=localhost
+      - ROS_MASTER_URI=http://${HOST_IP}:11311
+      - ROS_HOSTNAME=${HOST_IP}
       - ROS_DOMAIN_ID=0     
     tty: true
     stdin_open: true
@@ -66,7 +68,7 @@ services:
       - NVIDIA_DRIVER_CAPABILITIES=all
       - ROS_DOMAIN_ID=0
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      - ROS_HOSTNAME=localhost
+      - ROS_HOSTNAME=${HOST_IP}
       - DISPLAY=${DISPLAY}
       - XAUTHORITY=/tmp/.docker.xauth
     
@@ -91,7 +93,7 @@ services:
     network_mode: host
     environment:
       - ROS_DOMAIN_ID=0
-      - ROS_HOSTNAME=localhost
+      - ROS_HOSTNAME=${HOST_IP}
     restart: unless-stopped
     command: >
       /bin/bash -c "source /opt/ros/humble/setup.bash &&
