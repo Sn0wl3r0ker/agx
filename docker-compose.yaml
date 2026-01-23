@@ -80,6 +80,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - /home/systemlabagx/disk/Lun_RL_ws/src/RL_ppo/models:/root/ros2_ws/src/models
     tty: true
     stdin_open: true
 
