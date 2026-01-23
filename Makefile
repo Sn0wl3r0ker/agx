@@ -67,6 +67,11 @@ up: check-env ## Start services in background
 	@$(COMPOSE_CMD) up -d $(s)
 	@echo "[Info] System started."
 
+rebuild: check-env ## Force rebuild and recreate containers
+	@echo "[Info] Rebuilding and Restarting services..."
+	@$(COMPOSE_CMD) up -d --build --force-recreate $(s)
+	@echo "[Info] Rebuild complete."
+
 down: ## Stop and remove containers
 	@echo "[Info] Stopping services..."
 	@$(COMPOSE_CMD) down --remove-orphans $(s)
