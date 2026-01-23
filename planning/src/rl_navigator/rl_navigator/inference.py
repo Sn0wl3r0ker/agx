@@ -25,6 +25,8 @@ import time
 from squaternion import Quaternion
 from stable_baselines3 import PPO
 from filterpy.kalman import KalmanFilter 
+import pickle
+from stable_baselines3.common.vec_env import VecNormalize
 
 # ====================================================================
 # [路徑修正] 自動搜尋 ppo_nn.py
@@ -60,105 +62,6 @@ VERTICAL_LINES    = 180
 Z_INGNORE         = 6       
 HORIZONTAL        = ORIGINAL_SEGEMNTS - Z_INGNORE  
 STATE_DIM         = 11 
-
-# ====================================================================
-# [核心邏輯] FlowAidedDynamicTracker
-# 負責追蹤動態障礙物並計算 Sim2Real 獎勵/危險係數
-# ====================================================================
-class FlowAidedDynamicTracker:
-    def __init__(self, H, lidar_max=10.0, eps=0.1, min_len=3, z_start=3, z_end=7):
-        self.H = H                  
-        self.lidar_max = lidar_max  
-        self.eps = eps
-        self.min_len = min_len
-        self.z_start = z_start
-        self.z_end = z_end
-        self.prev_objs = None
-
-    def segment_1d(self, f_line):
-        segs = []
-        j = 0 
-        H = len(f_line)
-        while j < H:
-            if f_line[j] < self.lidar_max - self.eps:
-                start = j
-                base = f_line[j]
-                j += 1
-                while j < H and abs(f_line[j] - base) < self.eps and f_line[j] < self.lidar_max - self.eps:
-                    j += 1
-                if j - start >= self.min_len:
-                    segs.append((start, j, (start + j - 1) / 2.0, float(np.mean(f_line[start:j]))))
-            else: j += 1
-        return segs
-
-    def segment_with_xy(self, fmap, fmap_xy):
-        if fmap.size == 0: return []
-        
-        center_rows = fmap[:, self.z_start:self.z_end, 0]
-        f_line = np.mean(center_rows, axis=1)
-        raw_segs = self.segment_1d(f_line)
-        segs = []
-        for (start, end, center, dist) in raw_segs:
-            sub_fmap = fmap[start:end, self.z_start:self.z_end, 0]
-            sub_xy   = fmap_xy[start:end, self.z_start:self.z_end, :]
-            mask_valid = (sub_fmap < self.lidar_max - self.eps)
-            if not np.any(mask_valid): continue
-            segs.append({
-                "center_idx": center, 
-                "dist": dist, 
-                "x": float(sub_xy[..., 0][mask_valid].mean()), 
-                "y": float(sub_xy[..., 1][mask_valid].mean())
-            })
-        return segs
-
-    def track(self, segs, dt, robot_state):
-        if not segs: 
-            self.prev_objs = []
-            return []
-        rx, ry, yaw, v_lin = robot_state["odom_x"], robot_state["odom_y"], robot_state["yaw_now"], robot_state["v"]
-        v_robot_x, v_robot_y = v_lin * math.cos(yaw), v_lin * math.sin(yaw)
-        objs = [{"x": s["x"], "y": s["y"], "dist": s["dist"], "vx": 0.0, "vy": 0.0, "speed": 0.0, "v_r": 0.0, "theta": math.pi/2} for s in segs]
-        
-        if not self.prev_objs or dt <= 1e-6: 
-            self.prev_objs = objs
-            return objs
-        
-        for ob in objs:
-            if not self.prev_objs: break
-            best = min(self.prev_objs, key=lambda p: (p["x"]-ob["x"])**2 + (p["y"]-ob["y"])**2)
-            
-            vx_dobs, vy_dobs = (ob["x"] - best["x"])/dt, (ob["y"] - best["y"])/dt
-            px_rel, py_rel = rx - ob["x"], ry - ob["y"]
-            vx_rel, vy_rel = vx_dobs - v_robot_x, vy_dobs - v_robot_y
-            dist_rel, vel_rel = math.hypot(px_rel, py_rel), math.hypot(vx_rel, vy_rel)
-
-            if dist_rel > 1e-6 and vel_rel > 1e-6:
-                dot = px_rel * vx_rel + py_rel * vy_rel
-                cos_theta = dot / (dist_rel * vel_rel)
-                cos_theta = max(-1.0, min(1.0, cos_theta))
-                theta = math.acos(cos_theta)
-            else:
-                theta = math.pi / 2.0
-
-            ob.update({"vx": vx_dobs, "vy": vy_dobs, "speed": math.hypot(vx_dobs, vy_dobs), "v_r": vel_rel, "theta": theta})
-        
-        self.prev_objs = objs
-        return objs
-
-    def compute_flow_reward(self, objs):
-        danger_terms = []
-        for ob in objs:
-            if ob["v_r"] <= 0: continue
-            k = 1 + ob["v_r"] * math.exp(1.0/(ob["dist"]+1)) * max(0.0, 1.0 - ob["theta"]/(math.pi/2))
-            if ob["dist"] < 6.0: 
-                danger_terms.append(np.clip(math.log(max((ob["dist"]-0.8)/k, 0.0001)), -5.0, 0.05))
-        return 2.0 * (sum(danger_terms)/len(danger_terms)) if danger_terms else 0.05
-
-    def update(self, fmap, fmap_xy, dt, robot_state):
-        segs = self.segment_with_xy(fmap, fmap_xy)
-        objs = self.track(segs, dt, robot_state)
-        return objs, self.compute_flow_reward(objs)
-
 # ====================================================================
 # [主節點] RL Inference Node (ROS 2)
 # ====================================================================
@@ -183,15 +86,39 @@ class RLInferenceNode(Node):
             self.get_logger().error(f"Failed to load model: {e}")
             self.model = None
 
+        # =========================================================
+        # [VecNormalize] 
+        # =========================================================
+        vecnorm_path = os.path.join(home_dir, "ros2_ws/src/models/vecnorm.pkl")
+
+        if os.path.exists(vecnorm_path):
+            with open(vecnorm_path, "rb") as f:
+                self.vecnorm = pickle.load(f)
+
+            # ❗非常重要：demo / inference 設定
+            self.vecnorm.training = False
+            self.vecnorm.norm_reward = False
+
+            self.get_logger().info("✅ VecNormalize loaded (frozen inference mode).")
+        else:
+            self.vecnorm = None
+            self.get_logger().warn("⚠️ VecNormalize pkl not found, running WITHOUT normalization!")
+
+
+
+
+
+
         # 2. 初始化模組
         self.lock = threading.Lock()
         self.raw = {"odom": None, "imu": None, "lidar": None, "mobile": None}
         
-        self.flow_tracker = FlowAidedDynamicTracker(H=VERTICAL_LINES, min_len=4)
+        # self.flow_tracker = FlowAidedDynamicTracker(H=VERTICAL_LINES, min_len=4)
         
         self.distance_map = np.full((VERTICAL_LINES, HORIZONTAL, 1), LIDAR_MAX_OBSDIS, np.float32)
         self.fmap_xy = np.zeros((VERTICAL_LINES, HORIZONTAL, 2), np.float32)
         self.lidar_history = deque(maxlen=3)
+        self.min_laser = 5.0 # 初始給較遠值
         for _ in range(3):
             self.lidar_history.append(np.zeros((VERTICAL_LINES, HORIZONTAL, 1), dtype=np.float32))
 
@@ -291,6 +218,11 @@ class RLInferenceNode(Node):
             cmd = Twist()
             cmd.linear.x = float(max(0, action[0] * 0.9))
             cmd.angular.z = float(np.clip(action[1], -W_MAX, W_MAX))
+
+            if self.min_laser <= 0.2:
+                cmd.linear.x = 0.0
+                cmd.angular.z = 0.0
+
             self.vel_pub.publish(cmd)
 
     def process_lidar_and_track(self, lid_msg):
@@ -336,10 +268,7 @@ class RLInferenceNode(Node):
         self.distance_map = fmap[:, Z_INGNORE:, :]
         self.fmap_xy = f_xy[:, Z_INGNORE:, :]
         self.lidar_history.append(self.distance_map.copy())
-
-        # Flow Tracker Update
-        robot_state = {"odom_x": self.odom_x, "odom_y": self.odom_y, "yaw_now": self.odom_yaw, "v": self.mobile[0]}
-        _, self.latest_dyna_reward = self.flow_tracker.update(self.distance_map, self.fmap_xy, TIME_DELTA, robot_state)
+        self.min_laser = float(np.min(self.distance_map[:, :, 0]))
 
     def get_observation(self):
         skew_x = self.stage_goal[0][0] - self.odom_x
@@ -366,6 +295,17 @@ class RLInferenceNode(Node):
 
         lidar_stack = np.concatenate(list(self.lidar_history), axis=2)
         
+        # =========================================================
+        # VecNormalize (state only, frozen)
+        # =========================================================
+        if self.vecnorm is not None:
+            # 這裡假設 VecNormalize 的 obs_rms 前 STATE_DIM 維是 state
+            mean = self.vecnorm.obs_rms.mean[:STATE_DIM]
+            var  = self.vecnorm.obs_rms.var[:STATE_DIM]
+            state = (state - mean) / np.sqrt(var + 1e-8)
+
+
+
         return {
             "lidar": lidar_stack, 
             "state_current": state
