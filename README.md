@@ -31,27 +31,6 @@ graph TD
 
 ## 🚀 Quick Start (The "Makefile" Way)
 
-這是一份專業、簡潔且涵蓋你所有功能的 `Quick Start README.md`。它特別強調了你剛開發的 Makefile 互動功能與 Task Manager 工作流。
-
-你可以直接複製貼上到專案根目錄的 `README.md`。
-
----
-
-# AGX ROS Project Manager
-
-This project provides a containerized ROS development environment optimized for **NVIDIA Jetson AGX** and **x86 PCs**. It features a robust `Makefile` interface for managing Docker services, handling multi-session tasks (via Tmux), and streamlining the development workflow.
-
-## 📋 Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-* **Docker** & **Docker Compose**
-* **NVIDIA Container Toolkit** (for GPU acceleration)
-* **Make**
-* **Tmux** (Required on the host for Task Manager features)
-
-## 🚀 Quick Start
-
 ### 1. Build and Start Services
 
 Initialize the Docker environment. The system automatically detects your architecture (AGX vs PC).
