@@ -29,7 +29,7 @@
     
       
       <!-- b1-->
-      <param name="globalmap_pcd" value="$(find hdl_localization)/data/0305_b1_map.pcd"/>
+      <!-- <param name="globalmap_pcd" value="$(find hdl_localization)/data/0305_b1_map.pcd"/> -->
       <!--param name="globalmap_pcd" value="$(find hdl_localization)/data/0425_b1_slope.pcd"/-->
       <!--param name="globalmap_pcd" value="$(find hdl_localization)/data/0425_b1_slope_2.pcd"/-->
             
@@ -63,7 +63,7 @@
       <!-- 8F -->
       <!--param name="globalmap_pcd" value="$(find hdl_localization)/data/8f_s_path_0307.pcd"/-->
       <!-- RTAB 戶外停車場 -->
-      <!-- <param name="globalmap_pcd" value="$(find hdl_localization)/data/downsampled_0107_surface_depth_9_1_1.pcd"/>  -->
+      <param name="globalmap_pcd" value="$(find hdl_localization)/data/downsampled_0107_surface_depth_9_1_1.pcd"/> 
       
       <!--b1 換道-->
       <!--param name="globalmap_pcd" value="$(find hdl_localization)/data/0305_b1_map.pcd"/-->
