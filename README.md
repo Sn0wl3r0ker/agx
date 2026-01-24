@@ -31,46 +31,54 @@ graph TD
 
 ## 🚀 Quick Start (The "Makefile" Way)
 
-We use a **Makefile** to automate complex Docker commands.
+### 1. Build and Start Services
+
+Initialize the Docker environment. The system automatically detects your architecture (AGX vs PC).
+
+```bash
+# Build docker images
+make build
+# Start services in the background
+make up
+```
+
+### 2. Enter the Environment
+
+To open a terminal inside a running container (e.g., `control`, `planning`):
+
+```bash
+make join
+```
+
+*This command opens an interactive menu to select the target container.*
+
+### 3. Launch ROS Tasks (Task Manager)
+
+To execute predefined hardware tasks (e.g., Lidar, Camera, Control) in the background:
+
+```bash
+make run
+```
+
+*Select a task from the menu. The task will run in a detached Tmux session.*
+
+---
+
+## 🛠️ Makefile Workflow
+
+This project uses a "Fire and Forget" workflow for running ROS nodes.
 
 | Command | Description |
-| :--- | :--- |
-| **`make up`** | 🚀 **Start System**. Auto-detects PC/AGX mode. |
-| **`make build`** | 🛠️ **Build Images**. Run this if you changed `Dockerfile`. |
-| **`make rebuild`** | 🔄 **Rebuild + Start**. Clean restart after updates. |
-| **`make down`** | 🛑 **Stop System**. Stops containers and removes networks. |
-| **`make join`** | 🐳 **Enter Container**. Defaults to `isaac_ros`. |
-| **`make logs`** | 📄 **View Logs**. Real-time logs from all services. |
+| --- | --- |
+| **`make up`** | Start all containers (`control`, `planning`, `visualization`, etc.) in detached mode. |
+| **`make run`** | **Launch a ROS Task.** Opens a menu to start nodes like *Keyboard Control*, *Lidar*, or *SLAM*. |
+| **`make view`** | **Monitor a Task.** Attach to the Tmux session of a running background task to see logs or control the robot. |
+| **`make stop`** | **Terminate a Task.** Select specific background tasks to kill. |
+| **`make join`** | Open a bash shell in a specific container (Interactive selection). |
+| **`make logs`** | Follow the logs of all Docker services. |
+| **`make rebuild`** | Force rebuild images and restart containers (useful after Dockerfile changes). |
+| **`make down`** | Stop and remove all containers. |
 
-### 🎯 Target Specific Services
-
-You can target specific services to save time (e.g., only rebuilding the planning node).
-
-| Argument | Usage Example | Description |
-| :--- | :--- | :--- |
-| **`s=<name>`** | `make rebuild s=planning` | Applies `up`, `down`, `build`, or `rebuild` to a **single service**. |
-| **`service=<name>`** | `make join service=control` | Specifies which container to enter with `make join`. |
-
-
-### Mode B: Remote Deployment (PC -\> AGX)
-
-***Best for:** Clean builds, environment updates, and deploying from your powerful PC.*
-
-1.  Switch your Docker context to the AGX:
-    ```bash
-    docker context use agx_remote
-    ```
-2.  Deploy (Build on PC, Run on AGX):
-    ```bash
-    # The Makefile detects the remote context and switches to AGX mode automatically
-    make rebuild
-    ```
-3.  Switch back to local when done:
-    ```bash
-    docker context use default
-    ```
-> **Note**: In this mode, containers use the code baked into the Docker Image. Local source files on the AGX are **not** mounted.
------
 
 ## 📊 Visualization (Foxglove Studio)
 
@@ -179,5 +187,19 @@ docker context create agx_remote --docker "host=ssh://systemlabagx@<AGX_IP>"
 # Verify connection
 docker --context agx_remote info
 ```
+### Remote Deployment (PC -\> AGX)
+
+***Best for:** Clean builds, environment updates, and deploying from powerful PC.*
+
+1.  Switch your Docker context to the AGX:
+    ```bash
+    docker context use agx_remote
+    ```
+2.  Switch back to local when done:
+    ```bash
+    docker context use default
+    ```
+> **Note**: In PC mode, containers use the code baked into the Docker Image. Local source files on the AGX are **not** mounted.
+-----
 
 **Maintainer**: NYCUSystemLab
