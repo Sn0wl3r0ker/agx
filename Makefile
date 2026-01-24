@@ -4,7 +4,7 @@
 
 # --- [Configuration] ---
 PROJECT_NAME := agx_ros
-service ?= control
+# Default service is still kept for internal reference, but join is now interactive
 TASK_CONTAINER := control
 
 export DOCKER_BUILDKIT=1
@@ -39,21 +39,18 @@ TASK_EXEC := docker exec -it $(TASK_CONTAINER) bash -ic
 
 # --- [Targets] ---
 .DEFAULT_GOAL := help
-.PHONY: help build up down join logs ps clean run stop view check-service check-task-service
+.PHONY: help build up down join logs ps clean run stop view check-env check-task-service
 
 help: ## Show available commands
 	@echo "AGX ROS Control Interface"
-	@echo "   Container: $(TASK_CONTAINER)"
-	@echo "   Context:   $(CURRENT_CONTEXT)"
-	@echo "   Mode:      $(MODE)"
+	@echo "   Task Target: $(TASK_CONTAINER)"
+	@echo "   Context:     $(CURRENT_CONTEXT)"
+	@echo "   Mode:        $(MODE)"
 	@echo "------------------------------------------------"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "%-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 check-env:
 	@if [ ! -f $(ENV_FILE) ]; then echo "[Error] Config file '$(ENV_FILE)' not found."; exit 1; fi
-
-check-service:
-	@if [ -z "$$(docker ps -q -f name=$(service))" ]; then echo "[Error] Service '$(service)' is not running. Run 'make up' first."; exit 1; fi
 
 check-task-service:
 	@if [ -z "$$(docker ps -q -f name=$(TASK_CONTAINER))" ]; then echo "[Error] Container '$(TASK_CONTAINER)' is not running. Run 'make up' first."; exit 1; fi
@@ -77,12 +74,31 @@ down: ## Stop and remove containers
 	@$(COMPOSE_CMD) down --remove-orphans $(s)
 	@echo "[Info] Services stopped."
 
-join: check-service ## Enter container shell
-	@echo "[Info] Entering $(service)..."
-	@docker exec -it $(service) bash
+join: ## Enter container shell (Interactive)
+	@# Filter by Docker Compose Project Label instead of Name string
+	@LIST=$$(docker ps --filter "label=com.docker.compose.project=$(PROJECT_NAME)" --format "{{.Names}}" || true); \
+	if [ -z "$$LIST" ]; then echo "[Info] No project containers are running."; exit 0; fi; \
+	echo "=========================================="; \
+	echo " Select container to enter"; \
+	echo "=========================================="; \
+	echo "$$LIST" | awk '{print NR ") " $$0}'; \
+	echo "q) Quit"; \
+	echo "------------------------------------------"; \
+	read -p "Enter number: " j_choice; \
+	if [ "$$j_choice" = "q" ]; then exit 0; fi; \
+	TARGET=$$(echo "$$LIST" | sed -n "$${j_choice}p"); \
+	if [ -n "$$TARGET" ]; then \
+		echo "[Info] Entering $$TARGET..."; \
+		docker exec -it $$TARGET bash; \
+	else \
+		echo "[Error] Invalid number."; \
+	fi
 
 logs: ## Follow service logs
 	@$(COMPOSE_CMD) logs -f
+
+ps: ## View container status
+	@$(COMPOSE_CMD) ps
 
 clean: ## Remove containers and images
 	@$(COMPOSE_CMD) down --rmi local -v --remove-orphans

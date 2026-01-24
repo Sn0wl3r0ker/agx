@@ -31,25 +31,74 @@ graph TD
 
 ## 🚀 Quick Start (The "Makefile" Way)
 
-We use a **Makefile** to automate complex Docker commands.
+這是一份專業、簡潔且涵蓋你所有功能的 `Quick Start README.md`。它特別強調了你剛開發的 Makefile 互動功能與 Task Manager 工作流。
+
+你可以直接複製貼上到專案根目錄的 `README.md`。
+
+---
+
+# AGX ROS Project Manager
+
+This project provides a containerized ROS development environment optimized for **NVIDIA Jetson AGX** and **x86 PCs**. It features a robust `Makefile` interface for managing Docker services, handling multi-session tasks (via Tmux), and streamlining the development workflow.
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+* **Docker** & **Docker Compose**
+* **NVIDIA Container Toolkit** (for GPU acceleration)
+* **Make**
+* **Tmux** (Required on the host for Task Manager features)
+
+## 🚀 Quick Start
+
+### 1. Build and Start Services
+
+Initialize the Docker environment. The system automatically detects your architecture (AGX vs PC).
+
+```bash
+# Build docker images
+make build
+# Start services in the background
+make up
+```
+
+### 2. Enter the Environment
+
+To open a terminal inside a running container (e.g., `control`, `planning`):
+
+```bash
+make join
+```
+
+*This command opens an interactive menu to select the target container.*
+
+### 3. Launch ROS Tasks (Task Manager)
+
+To execute predefined hardware tasks (e.g., Lidar, Camera, Control) in the background:
+
+```bash
+make run
+```
+
+*Select a task from the menu. The task will run in a detached Tmux session.*
+
+---
+
+## 🛠️ Makefile Workflow
+
+This project uses a "Fire and Forget" workflow for running ROS nodes.
 
 | Command | Description |
-| :--- | :--- |
-| **`make up`** | 🚀 **Start System**. Auto-detects PC/AGX mode. |
-| **`make build`** | 🛠️ **Build Images**. Run this if you changed `Dockerfile`. |
-| **`make rebuild`** | 🔄 **Rebuild + Start**. Clean restart after updates. |
-| **`make down`** | 🛑 **Stop System**. Stops containers and removes networks. |
-| **`make join`** | 🐳 **Enter Container**. Defaults to `isaac_ros`. |
-| **`make logs`** | 📄 **View Logs**. Real-time logs from all services. |
-
-### 🎯 Target Specific Services
-
-You can target specific services to save time (e.g., only rebuilding the planning node).
-
-| Argument | Usage Example | Description |
-| :--- | :--- | :--- |
-| **`s=<name>`** | `make rebuild s=planning` | Applies `up`, `down`, `build`, or `rebuild` to a **single service**. |
-| **`service=<name>`** | `make join service=control` | Specifies which container to enter with `make join`. |
+| --- | --- |
+| **`make up`** | Start all containers (`control`, `planning`, `visualization`, etc.) in detached mode. |
+| **`make run`** | **Launch a ROS Task.** Opens a menu to start nodes like *Keyboard Control*, *Lidar*, or *SLAM*. |
+| **`make view`** | **Monitor a Task.** Attach to the Tmux session of a running background task to see logs or control the robot. |
+| **`make stop`** | **Terminate a Task.** Select specific background tasks to kill. |
+| **`make join`** | Open a bash shell in a specific container (Interactive selection). |
+| **`make logs`** | Follow the logs of all Docker services. |
+| **`make rebuild`** | Force rebuild images and restart containers (useful after Dockerfile changes). |
+| **`make down`** | Stop and remove all containers. |
 
 
 ### Mode B: Remote Deployment (PC -\> AGX)
