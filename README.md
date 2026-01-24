@@ -80,24 +80,19 @@ This project uses a "Fire and Forget" workflow for running ROS nodes.
 | **`make down`** | Stop and remove all containers. |
 
 
-### Mode B: Remote Deployment (PC -\> AGX)
+### Remote Deployment (PC -\> AGX)
 
-***Best for:** Clean builds, environment updates, and deploying from your powerful PC.*
+***Best for:** Clean builds, environment updates, and deploying from powerful PC.*
 
 1.  Switch your Docker context to the AGX:
     ```bash
     docker context use agx_remote
     ```
-2.  Deploy (Build on PC, Run on AGX):
-    ```bash
-    # The Makefile detects the remote context and switches to AGX mode automatically
-    make rebuild
-    ```
-3.  Switch back to local when done:
+2.  Switch back to local when done:
     ```bash
     docker context use default
     ```
-> **Note**: In this mode, containers use the code baked into the Docker Image. Local source files on the AGX are **not** mounted.
+> **Note**: In PC mode, containers use the code baked into the Docker Image. Local source files on the AGX are **not** mounted.
 -----
 
 ## 📊 Visualization (Foxglove Studio)
