@@ -35,6 +35,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=humble
 ENV WORKSPACE=/root/ros2_ws
 
+# 加入 Yarn GPG key 和 repository (解決 repository 未簽名問題)
+RUN curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/yarn.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian stable main" > /etc/apt/sources.list.d/yarn.list
+
 # 安裝 Nav2 與 ROS 工具
 RUN apt-get update && \
     apt-get install -y -o Dpkg::Options::="--force-overwrite" \
