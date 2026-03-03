@@ -1,0 +1,16 @@
+car_controller_node:
+  ros__parameters:
+    usb_port: '/dev/ttyUSB0'  # USB port for the car controller
+    # 車體參數
+    car_distance: 0.65     # 車輪距離: 前後兩個輪胎中心點的距離 + 左右單位兩個輪胎中心點的距離 單位:米
+    car_mode: 'diff'      # 'diff' or 'mecanum'
+    Tire_diameter: 0.18   # 車輪直徑 單位:米
+    # --------
+    # 馬達參數
+    encoder_resolution: 720   # 編碼器每圈的脈衝數
+    gear_ratio: 1            # 減速比
+    # --------
+    # ros參數
+    odom_up_hz: 10  # 里程計更新頻率 單位:Hz
+    # --------
+

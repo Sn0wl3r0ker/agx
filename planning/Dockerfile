@@ -49,18 +49,17 @@ RUN apt-get update && \
     ros-${ROS_DISTRO}-xacro \
     ros-${ROS_DISTRO}-joint-state-publisher \
     ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
+    ros-${ROS_DISTRO}-tf-transformations \
+    ros-${ROS_DISTRO}-teleop-twist-keyboard \
     && rm -rf /var/lib/apt/lists/*
 
 # =======================================================
 # 4. 安裝 Python 庫 (Stable Baselines 3 等)
 # =======================================================
 RUN pip3 install --no-cache-dir \
-    "stable-baselines3" \
-    "gymnasium" \
-    "tensorboard" \
-    "filterpy" \
-    "squaternion" \
-    "setuptools"
+    "setuptools" \
+    "pyserial" \
+    "numpy<1.24.0"
 
 # =======================================================
 # 5. [新增] 外部依賴源碼安裝 (urg_node2)

@@ -23,7 +23,6 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
       - /home/systemlabagx/disk/Lun_RL_ws/src/six_wheels_teleop:/root/keyboard_control_ws/src/six_wheels_teleop
-    entrypoint: ["/root/entrypoint.sh"]
     tty: true
     stdin_open: true
 
@@ -42,7 +41,7 @@ services:
     environment:
       - ROS_MASTER_URI=http://${HOST_IP}:11311
       - ROS_HOSTNAME=${HOST_IP}
-      - ROS_DOMAIN_ID=0     
+      - ROS_DOMAIN_ID=0
     tty: true
     stdin_open: true
     command: >
@@ -55,7 +54,7 @@ services:
   # =========================================
   planning:
     build:
-      context: ./planning  
+      context: ./planning
       dockerfile: Dockerfile
     image: agx_ros/planning:latest
     container_name: planning
@@ -63,7 +62,7 @@ services:
     network_mode: host
     privileged: true
     runtime: nvidia
-    
+
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
@@ -72,15 +71,14 @@ services:
       - ROS_HOSTNAME=${HOST_IP}
       - DISPLAY=${DISPLAY}
       - XAUTHORITY=/tmp/.docker.xauth
-    
+
     volumes:
       - /dev:/dev
-      - /run/jtop.stats.sock:/run/jtop.stats.sock 
-      - /etc/localtime:/etc/localtime:ro 
+      - /run/jtop.stats.sock:/run/jtop.stats.sock
+      - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
-      - /home/systemlabagx/disk/Lun_RL_ws/src/RL_ppo/models:/root/ros2_ws/src/models
     tty: true
     stdin_open: true
 
@@ -99,9 +97,8 @@ services:
       - ROS_HOSTNAME=${HOST_IP}
     restart: unless-stopped
     command: >
-      /bin/bash -c "source /opt/ros/humble/setup.bash &&
-      ros2 run foxglove_bridge foxglove_bridge --ros-args -p send_buffer_limit:=100000000"
-      
+      /bin/bash -c "source /opt/ros/humble/setup.bash && ros2 run foxglove_bridge foxglove_bridge --ros-args -p send_buffer_limit:=100000000"
+
   # =========================================
   # 5. Isaac ROS 視覺加速服務
   # =========================================
@@ -111,7 +108,7 @@ services:
       dockerfile: Dockerfile
     image: agx_ros/isaac_ros:latest
     container_name: isaac_ros
-    profiles: ["agx_mode"]
+    profiles: [ "agx_mode" ]
     network_mode: host
     environment:
       - NVIDIA_VISIBLE_DEVICES=all

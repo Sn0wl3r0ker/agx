@@ -19,6 +19,9 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install -U jetson-stats
 
 # 4. 安裝 Isaac ROS 相關套件
+RUN curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/yarn.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian stable main" > /etc/apt/sources.list.d/yarn.list
+
 RUN apt-get update && apt-get install -y \
     ros-humble-isaac-ros-common \
     ros-humble-isaac-ros-apriltag \
