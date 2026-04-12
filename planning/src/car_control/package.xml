@@ -1,39 +1,42 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <!-- ROS2 套件宣告 開始 
-          format="3" 表示使用 ROS2 的套件格式
-          package: 套件名稱，應與目錄名稱一致
-          version: 套件版本號，通常遵循語意化版本控制（SemVer）
-          description: 套件描述，簡要說明套件功能
-          maintainer: 套件維護者資訊，包括姓名和電子郵件
-          license: 套件授權聲明，通常為開源授權 
-  -->
+  <!-- ====== 套件基本資訊 ====== -->
   <name>car_control</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <version>0.1.0</version>
+  <description>
+    車輛底層控制套件 — 包含 Serial Bridge (C++) 與 Kinematics (C++) 節點，
+    以及舊版 Python 節點，用於差速車輛的速度控制、Odometry 計算與 TF 發布。
+  </description>
   <maintainer email="zanrobot@todo.todo">zanrobot</maintainer>
-  <license>TODO: License declaration</license>  
-  <!-- ROS2 編譯時套件宣告 開始
-          exec_depend: 執行相依，套件運作時必須安裝的相依套件
-          buildtool_depend: 建置工具相依，編譯/建置時需要的工具（如 ament_python）
-          test_depend: 測試相依，僅在執行測試時需要的套件
-  -->
-  <exec_depend>rclpy</exec_depend>
+  <license>TODO: License declaration</license>
+
+  <!-- ====== 建置工具 ====== -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- ====== C++ 編譯依賴 ====== -->
+  <build_depend>rclcpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_ros</build_depend>
+
+  <!-- ====== 執行依賴 (C++ & Python 共用) ====== -->
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>tf2</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>tf2_msgs</exec_depend>
-  <!-- 若需要 -->
-  <exec_depend>std_msgs</exec_depend>
-  <!-- 若用到 tf_transformations，非 ROS 套件 -->
-  <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_pep257</test_depend>
-  <test_depend>python3-pytest</test_depend>
-  <!-- 編譯時套件宣告 結束-->
 
-  <export>  <!-- 用於指定此套件的建置型態和其他元數據 -->
-    <build_type>ament_python</build_type> <!-- 指定此套件為 ament_python（Python）建置型態 -->
+  <!-- ====== 測試依賴 ====== -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <!-- ====== 建置型態 ====== -->
+  <export>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

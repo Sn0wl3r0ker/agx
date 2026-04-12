@@ -35,3 +35,13 @@ make join service=nanollm
 ✅ 可以用 jetson-containers 工具 - 查看其他可用 image
 查看其他可用 image
 你的 Dockerfile 可以保留作為參考，或之後需要客製化時再使用。
+
+## realsense啟動
+```bash
+# 查usb port
+v4l2-ctl --list-devices
+ros2 run v4l2_camera v4l2_camera_node --ros-args -p video_device:="/dev/video10"
+```
+```
+
+```

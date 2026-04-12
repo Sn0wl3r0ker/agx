@@ -1,0 +1,37 @@
+ekf_filter_node:
+  ros__parameters:
+    frequency: 30.0               # 更新頻率 (可配合 D455 IMU 或里程計頻率)
+    sensor_timeout: 0.1
+    two_d_mode: true              # 將 Z 軸、Roll 與 Pitch 固定為 0
+    transform_time_offset: 0.0
+    transform_timeout: 0.0
+    print_diagnostics: true
+    publish_tf: true              # 讓 EKF 接管 TF 發布工作
+
+    # ==== Frames 設定 ====
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_footprint # 如果你的系統沒有 base_footprint，請改為 base_link
+    world_frame: odom             # 作為一般的 odom -> base_link TF 發布 
+
+    # ==== Odom0: Arduino 底層輪速器 (/raw_odom) ====
+    odom0: /raw_odom
+    odom0_config: [false,  false,  false,
+                   false,  false,  false,
+                   true,   true,  false,    # 我們只信任底層回報的 X 軸向線性速度 (前後推力)
+                   false,  false,  false,    # 忽略所有原始的 Yaw 與 角速度
+                   false,  false,  false]
+    odom0_queue_size: 10
+    odom0_differential: false
+
+    # ==== IMU0: RealSense D455 (/camera/camera/imu) ====
+    imu0: /camera/camera/imu
+    imu0_config: [false, false, false,
+                  false, false, false,       
+                  false, false, false,
+                  false, true, true,        # 我們極度信任 D455 提供給我們的 Yaw 角速度 (Z-axis Angular Velocity)
+                  false, false, false]
+    imu0_queue_size: 10
+    imu0_differential: false
+    # 移除重力加速度，避免 AMR 在微小坡度時的擾動
+    imu0_remove_gravitational_acceleration: true

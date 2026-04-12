@@ -1,0 +1,57 @@
+mission_id: amr_hallway_demo
+mission_text: >
+  從起點出發，沿主走廊前進，找到右側支路後右轉，前往貨梯區域並停在貨梯前方。
+environment_id: hallway_9f
+camera_source: /camera/front/image_raw
+inference_interval_sec: 1.5
+steps:
+  - step_id: 1
+    instruction: 離開起始區域並面向主走廊
+    visual_goal: 前方出現主走廊視野
+    expected_landmarks: [corridor]
+    control_primitive: move_forward_until_recheck
+    votes_needed: 3
+    confidence_threshold: 0.75
+    min_dwell_sec: 2.0
+    timeout_sec: 12.0
+    fallback: pause
+  - step_id: 2
+    instruction: 沿主走廊前進並搜尋右側第一個支路
+    visual_goal: 右側出現可通行支路
+    expected_landmarks: [corridor, right_branch]
+    control_primitive: move_forward_until_recheck
+    votes_needed: 3
+    confidence_threshold: 0.75
+    min_dwell_sec: 3.0
+    timeout_sec: 20.0
+    fallback: pause
+  - step_id: 3
+    instruction: 到達支路後執行右轉
+    visual_goal: 視角完成右轉並對準新走廊方向
+    expected_landmarks: [right_turn_point, branch_corridor]
+    control_primitive: turn_right_90
+    votes_needed: 3
+    confidence_threshold: 0.8
+    min_dwell_sec: 2.0
+    timeout_sec: 10.0
+    fallback: stop_and_hold
+  - step_id: 4
+    instruction: 沿支路前進並搜尋貨梯區域
+    visual_goal: 出現電梯或貨梯相關區域特徵
+    expected_landmarks: [branch_corridor, freight_elevator_zone]
+    control_primitive: move_forward_until_recheck
+    votes_needed: 3
+    confidence_threshold: 0.75
+    min_dwell_sec: 3.0
+    timeout_sec: 20.0
+    fallback: pause
+  - step_id: 5
+    instruction: 停在貨梯前方定位點
+    visual_goal: 貨梯位於前方且距離適中
+    expected_landmarks: [freight_elevator, stop_point]
+    control_primitive: approach_target_zone
+    votes_needed: 3
+    confidence_threshold: 0.8
+    min_dwell_sec: 2.0
+    timeout_sec: 12.0
+    fallback: stop_and_hold

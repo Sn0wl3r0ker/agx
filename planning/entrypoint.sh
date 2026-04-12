@@ -4,9 +4,6 @@ set -eo pipefail
 ROS_DISTRO=${ROS_DISTRO:-humble}
 WORKSPACE=/root/ros2_ws
 BASHRC_FILE="/root/.bashrc"
-# 定義 LiDAR 設定檔路徑
-LIDAR_CONFIG="${WORKSPACE}/install/urg_node2/share/urg_node2/config/params_ether.yaml"
-
 echo "========================================="
 echo "   ROS 2 ${ROS_DISTRO} Planning Container"
 echo "========================================="
@@ -23,7 +20,8 @@ fi
 # 2. 智慧編譯檢查 (Dev vs Prod)
 # -------------------------------------------------
 if [ -d "${WORKSPACE}/src" ]; then
-    if [ ! -f "${WORKSPACE}/install/setup.bash" ]; then
+    if [ ! -f "${WORKSPACE}/install/setup.bash" ] || \
+       { [ -f "${WORKSPACE}/src/vla_demo/package.xml" ] && [ ! -d "${WORKSPACE}/install/vla_demo" ]; }; then
         echo ">>> Workspace not built. Building now..."
         cd ${WORKSPACE}
         colcon build --symlink-install
@@ -38,16 +36,10 @@ if [ -d "${WORKSPACE}/src" ]; then
 fi
 
 # -------------------------------------------------
-# 3. 強制修正 LiDAR IP (不論原值為何)
+# NOTE: LiDAR 參數 (如 ip_address) 已透過 ROS 2 Launch File 覆寫注入
+#       參見 car_control/config/urg_node2_override.yaml
+#       不再需要在此處用 sed 修改第三方套件的設定檔
 # -------------------------------------------------
-# 放在 Source 之後，確保 install 資料夾已存在
-if [ -f "$LIDAR_CONFIG" ]; then
-    echo ">>> Setting LiDAR IP to 192.168.1.201..."
-    sed -i "s/ip_address:.*/ip_address: '192.168.1.201'/g" "$LIDAR_CONFIG"
-else
-    echo ">>> [Warning] LiDAR config not found at: $LIDAR_CONFIG"
-    echo "    Check if urg_node2 is built correctly."
-fi
 
 echo "=== Environment ready ==="
 exec "$@"

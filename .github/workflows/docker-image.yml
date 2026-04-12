@@ -47,7 +47,7 @@ jobs:
           echo "========================================"
           echo "Verifying build for $file in context $dir"
           echo "========================================"
-          docker build "$dir" -f "$file"
+          docker build --platform linux/arm64 "$dir" -f "$file"
           # 立即清理建置暫存與映象檔，避免下一次 build 時 No space left on device
           docker system prune -a -f
           docker builder prune -a -f

@@ -26,6 +26,17 @@ ros2 run realsense2_camera realsense2_camera_node --ros-args \
 -p enable_infra1:=False \
 -p enable_infra2:=False
 ```
+# 重設realsense
+```bash
+ros2 launch realsense2_camera rs_launch.py initial_reset:=true
+```
+# Terminal 2 (Grounding DINO)
+```bash
+ros2 launch isaac_ros_grounding_dino isaac_ros_grounding_dino.launch.py \
+   model_file_path:=/workspaces/isaac_ros-dev/isaac_ros_assets/models/grounding_dino/grounding_dino_model.onnx \
+   engine_file_path:=/workspaces/isaac_ros-dev/isaac_ros_assets/models/grounding_dino/grounding_dino_model.plan \
+   text_prompt:="a_man"
+```
 
 # 1. 確保目錄存在
 ``` bash

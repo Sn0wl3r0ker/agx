@@ -30,13 +30,31 @@ RUN apt-get update && apt-get install -y \
     ros-humble-isaac-ros-jetson-stats \
     ros-humble-rmw-cyclonedds-cpp \
     ros-humble-isaac-ros-peoplesemseg-models-install \
+    ros-humble-vision-msgs \
     && apt-get remove -y ros-humble-compressed-depth-image-transport \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
-# 5. 設定工作目錄
+# 5. Grounding DINO 依賴 (跨版本移植 4.x → 3.2)
+#    - transformers: 文字 tokenizer 需要
+RUN pip3 install transformers
+
+# 6. cuda_stream.hpp 相容性 shim (4.x API → 3.2)
+#    isaac_ros_common 3.2 缺少此 header，由 shim 提供 inline 實作
+COPY shims/cuda_stream.hpp /tmp/cuda_stream_shim.hpp
+RUN COMMON_INCLUDE=$(find /opt/ros/humble -path '*/isaac_ros_common' -type d | head -1) && \
+    if [ -n "$COMMON_INCLUDE" ]; then \
+      cp /tmp/cuda_stream_shim.hpp "$COMMON_INCLUDE/cuda_stream.hpp"; \
+      echo "Installed cuda_stream.hpp shim to $COMMON_INCLUDE"; \
+    fi && \
+    rm -f /tmp/cuda_stream_shim.hpp
+
+# 7. Git safe directory (避免 volume mount 的 ownership 錯誤)
+RUN git config --global --add safe.directory '*'
+
+# 8. 設定工作目錄
 WORKDIR /workspaces/isaac_ros-dev
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
-# 6. 把 source setup.bash 寫入
+# 9. 把 source setup.bash 寫入
 RUN echo "source /workspaces/isaac_ros-dev/install/setup.bash" >> /root/.bashrc

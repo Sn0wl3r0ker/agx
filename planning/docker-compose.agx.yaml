@@ -1,0 +1,19 @@
+services:
+  planning:
+    network_mode: host
+    runtime: nvidia
+    ipc: host
+    # Jetson Tegra 核心缺少 hid_sensor_custom 模組，
+    # 強制 librealsense 走 libusb 後端以存取 D455 IMU
+    environment:
+      - KERNEL_BACKEND_OVERRIDE=FORCE_RSUSB_BACKEND
+    volumes:
+      # 分別掛載開發的 Package，避免覆蓋掉被放在 src 中的 urg_node2
+      - /home/systemlabagx/disk/agx/planning/src/car_control:/root/ros2_ws/src/car_control
+      - /home/systemlabagx/disk/agx/planning/src/rl_navigator:/root/ros2_ws/src/rl_navigator
+      - /home/systemlabagx/disk/agx/planning/src/models:/root/ros2_ws/src/models
+
+      # 允許容器「看見」動態設備節點，但預設無讀寫權限 (由 cgroup rules 放行)
+      - /dev:/dev
+      # 唯讀掛載 udev，讓 librealsense 知道硬體拓樸結構
+      - /run/udev:/run/udev:ro

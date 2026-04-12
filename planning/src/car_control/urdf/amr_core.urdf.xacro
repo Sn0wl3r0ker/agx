@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<robot name="amr_core" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- ========================================== -->
+    <!-- 1. 定義 base_footprint (在地板上的投影點)  -->
+    <!-- ========================================== -->
+    <link name="base_footprint" />
+
+
+    <!-- ========================================== -->
+    <!-- 2. 定義 base_link (車體旋轉中心/底盤中心點) -->
+    <!-- ========================================== -->
+    <link name="base_link">
+        <!-- 如果你需要加入視覺化 (Visual) 或碰撞 (Collision) 外型，可擴充於此處 -->
+    </link>
+
+    <!-- Joint: base_footprint -> base_link -->
+    <joint name="base_footprint_to_base_link" type="fixed">
+        <parent link="base_footprint" />
+        <child link="base_link" />
+        <!-- ⚠️【請填入實測數據】：base_link (車身中心) 相對於 base_footprint (地面投影) 的距離 -->
+        <!-- 通常 X 與 Y 為 0，而 Z 軸則是實體底盤的離地高度。例如底盤離地 5 公分，則為 xyz="0 0 0.05" -->
+        <origin xyz="0 0 0.0" rpy="0 0 0" />
+    </joint>
+
+
+    <!-- ========================================== -->
+    <!-- 3. 定義 camera_link (RealSense 相機的接合點)-->
+    <!-- ========================================== -->
+    <!-- realsense2_camera 節點啟動時，會自動以此 camera_link 為父節點，發布相機內部的光學/IMU Frames -->
+    <!-- 絕對不要在此 xacro 內定義如 camera_color_frame, camera_imu_frame 的內容，以免造成 TF 衝突。 -->
+    <link name="camera_link" />
+
+    <!-- Joint: base_link -> camera_link -->
+    <joint name="base_link_to_camera_link" type="fixed">
+        <parent link="base_link" />
+        <child link="camera_link" />
+        <!-- ⚠️【請拿捲尺在此填入實測數據】：RealSense (相機中心) 相對於 base_link (車身旋轉中心) 的三維距離與旋轉 -->
+        <!-- 
+             xyz = [前/後 X, 左/右 Y, 上/下 Z] (單位: 公尺)
+             rpy = [Roll X軸旋轉, Pitch Y軸旋轉, Yaw Z軸旋轉] (單位: 弧度 radian)
+             
+             (範例) 若相機裝在車身旋轉中心往前 30 公分、正中央 (Y=0)、高出 25 公分處：
+                    xyz="0.30 0.0 0.25"
+        -->
+        <origin xyz="0.41 0.0 0.20" rpy="0.0 0.0 0.0" />
+    </joint>
+
+
+    <!-- ========================================== -->
+    <!-- 4. 定義 laser (2D LiDAR 掃描原點)         -->
+    <!-- ========================================== -->
+    <!-- Hokuyo 30LX-EW 的雷射出光中心點 -->
+    <link name="laser" />
+
+    <!-- Joint: base_link -> laser -->
+    <joint name="base_link_to_laser" type="fixed">
+        <parent link="base_link" />
+        <child link="laser" />
+        <!-- ⚠️【請拿捲尺在此填入實測數據】：LiDAR 掃描中心 相對於 base_link (車身旋轉中心) 的三維距離 -->
+        <!-- 
+             xyz = [前/後 X, 左/右 Y, 上/下 Z] (單位: 公尺)
+             rpy = [Roll, Pitch, Yaw] (單位: 弧度)
+
+             (範例) 若 LiDAR 裝在車身旋轉中心的正前方 41 公分，高出 20 公分處：
+                    xyz="0.41 0.0 0.20"
+        -->
+        <origin xyz="0.41 0.0 0.25" rpy="0.0 0.0 0.0" />
+    </joint>
+
+</robot>

@@ -1,0 +1,3 @@
+services:
+  foxglove:
+    network_mode: host

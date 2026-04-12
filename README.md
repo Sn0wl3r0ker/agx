@@ -1,205 +1,90 @@
-# AGX Hybrid Navigation System (ROS 1 Noetic + ROS 2 Humble)
+# AGX ROS 2 AI Navigation System
 
-![System Architecture](https://img.shields.io/badge/Architecture-Hybrid%20ROS1%2B2-blue) ![Platform](https://img.shields.io/badge/Platform-NVIDIA%20Jetson%20AGX%20Orin-green) ![Docker](https://img.shields.io/badge/Docker-Buildx%20Remote-blueviolet)
+![System Architecture](https://img.shields.io/badge/Architecture-ROS%202%20Humble-blue) ![Platform](https://img.shields.io/badge/Platform-NVIDIA%20Jetson%20AGX%20Orin-green) ![Docker](https://img.shields.io/badge/Docker-Compose-blueviolet)
 
-This is a **Docker-based** hybrid navigation system designed specifically for the **NVIDIA Jetson AGX Orin (JetPack 6)** platform. The project adopts modern DevOps workflows, enabling cross-compilation on a PC and one-click remote deployment to the edge device.
+This is a modern **Docker-based** AI navigation system designed for the **NVIDIA Jetson AGX Orin (JetPack 6)**. It utilizes a unified ROS 2 architecture combined with state-of-the-art AI models for vision, natural language, and autonomous planning. The project adopts simple, dynamic Makefile-driven deployment out-of-the-box.
 
+## 🏗️ System Architecture (Containerized)
 
-## 🏗️ System Architecture
+The project leverages Docker Compose to isolate and manage distinct capabilities. All services automatically share host network or IPC when running in AGX mode.
 
-The project utilizes a **dual-track architecture** with containerized isolation:
-
-| Container | Role & Description |
+| Service | Role & Description |
 | --- | --- |
-| **`control`** | **[ROS 1 Noetic]** Handles low-level hardware drivers (Velodyne LiDAR, RealSense) and 3D SLAM algorithms. |
-| **`bridge`** | **[ROS 1 Bridge]** A dedicated bridge using `ros1_bridge` to enable seamless topic communication between Noetic and Humble. |
-| **`planning`** | **[ROS 2 Humble]** Responsible for high-level path planning (Nav2, Costmap) and behavior trees. |
-| **`foxglove`** | **[Visualization]** Runs a high-performance WebSocket server for remote visualization (replaces the heavy RViz client). |
-| **`isaac_ros`** | **[Perception]** Leverages NVIDIA Isaac ROS for GPU-accelerated VSLAM and AI perception tasks. |
-
+| **`planning`** | **[ROS 2 Core]** Hardware drivers (LiDAR, RealSense, Car base), Nav2 stack, slam_toolbox, and high-level control nodes. |
+| **`foxglove`** | **[Visualization]** Runs a high-performance WebSocket server for remote visualization, replacing heavy local GUIs like RViz. |
+| **`vlm`** | **[Isaac ROS]** GPU-accelerated VSLAM, object detection, and hardware-accelerated ROS 2 nodes. |
+| **`nanollm`** | **[Nano LLM]** Local Large Language Model interactions using Jetson's optimized inference. |
+| **`cosmos`** | **[Cosmos-Reason]** Advanced reasoning modules powered by Cosmos-Reason2. |
 
 ### 🌐 Network Topology
 
 ```mermaid
 graph TD
-    PC[PC Workstation] -- WiFi/SSH (192.168.200.x) --> AGX[AGX Orin]
-    AGX -- Ethernet (192.168.1.x) --> LiDAR[Velodyne VLP-16]
-    AGX -- USB --> Sensors[RealSense/Arduino]
+    PC[PC Workstation] -- WiFi/SSH --> AGX[AGX Orin]
+    AGX -- Ethernet --> LiDAR[Velodyne VLP]
+    AGX -- USB --> Sensors[Sensors & Base]
 ```
 
------
+## 🚀 Quick Start (Dynamic Makefile)
 
-## 🚀 Quick Start (The "Makefile" Way)
+We provide a streamlined `Makefile` that wraps Docker Compose. **If you run commands without specifying a service, an interactive menu will dynamically pop up!**
 
-### 1. Build and Start Services
-
-Initialize the Docker environment. The system automatically detects your architecture (AGX vs PC).
-
-```bash
-# Build docker images
-make build
-# Start services in the background
-make up
-```
-
-### 2. Enter the Environment
-
-To open a terminal inside a running container (e.g., `control`, `planning`):
-
-```bash
-make join
-```
-
-*This command opens an interactive menu to select the target container.*
-
-### 3. Launch ROS Tasks (Task Manager)
-
-To execute predefined hardware tasks (e.g., Lidar, Camera, Control) in the background:
-
-```bash
-make run
-```
-
-*Select a task from the menu. The task will run in a detached Tmux session.*
-
----
-
-## 🛠️ Makefile Workflow
-
-This project uses a "Fire and Forget" workflow for running ROS nodes.
+### Core Commands
 
 | Command | Description |
 | --- | --- |
-| **`make up`** | Start all containers (`control`, `planning`, `visualization`, etc.) in detached mode. |
-| **`make run`** | **Launch a ROS Task.** Opens a menu to start nodes like *Keyboard Control*, *Lidar*, or *SLAM*. |
-| **`make view`** | **Monitor a Task.** Attach to the Tmux session of a running background task to see logs or control the robot. |
-| **`make stop`** | **Terminate a Task.** Select specific background tasks to kill. |
-| **`make join`** | Open a bash shell in a specific container (Interactive selection). |
-| **`make logs`** | Follow the logs of all Docker services. |
-| **`make rebuild`** | Force rebuild images and restart containers (useful after Dockerfile changes). |
-| **`make down`** | Stop and remove all containers. |
+| **`make up [s=name]`** | Start services. Example: `make up` (pops up menu) or `make up s=planning`. |
+| **`make down [s=name]`** | Stop and remove running services. |
+| **`make build [s=name]`**| Build Docker images locally. |
+| **`make rebuild [s=name]`**| Force rebuild and recreate containers. |
+| **`make logs [s=name]`** | View container logs in real-time. |
+| **`make ps`** | List status of all docker-compose containers. |
+| **`make join [c=name]`** | Open an interactive bash shell inside a running container. |
+| **`make clean`** | Stop and completely remove all containers and images. |
+| **`make dashboard`** | Launch the centralized Web Dashboard on port 8080. |
 
+> **Interactive Menu Feature**: Operations like `make up`, `make down`, and `make join` will automatically parse your `docker-compose.yaml` (or `docker ps`) and display a numbered list. You can select single or multiple services (e.g., `1 3`) or press `a` for **All**.
 
 ## 📊 Visualization (Foxglove Studio)
 
+We use **Foxglove Studio** instead of RViz for remote monitoring over the network.
 
-
-This project uses **Foxglove Studio** instead of RViz for remote monitoring.
-
-
-
-1.  **Open Foxglove Studio** (On PC).
-
+1.  **Open Foxglove Studio** on your PC.
 2.  **Connection Setup**:
-
       * Source: `Foxglove WebSocket`
-
-      * URL: `ws://<AGX_IP>:8765` (AGX WiFi IP)
-
+      * URL: `ws://<AGX_IP>:8765`
 3.  **Common Topics**:
+      * `Map`: `/map`
+      * `Velodyne`: `/velodyne_points`
+      * `TF`: `/tf`
 
-      * `Map`: `/globalmap` (PointCloud2)
-
-      * `LiDAR`: `/velodyne_points` (PointCloud2)
-
-      * `Path`: `/global_path` (MarkerArray)
-
-      * `Robot`: `/tf`
-
-
-
-> **Tip**: If connected but no data appears, check if the Topic QoS settings in Foxglove are set to **Reliable**
-
-
-
------
-
-
+> **Tip**: Ensure QoS settings match (usually **Reliable** or **Best Effort** depending on the topic).
 
 ## 📝 Hardware Notes
 
-
-
 ### Velodyne LiDAR Setup
-
-
-
-The LiDAR uses Ethernet UDP. You must configure the AGX's wired interface (`eth0`) to a separate subnet.
-
-
-
+The LiDAR uses Ethernet UDP. Configure the AGX's wired interface (`eth0`) statically.
   * **LiDAR IP**: `192.168.1.201` (Default)
+  * **AGX eth0 IP**: `192.168.1.x` (Manual Static IP)
 
-  * **AGX eth0 IP**: `192.168.1.x` (Manual Static IP, e.g., 77)
+## 👥 Remote Deployment Context (PC -> AGX)
 
-  * **Docker Port Mapping**: `2368:2368/udp`
-
-
-
------
-
-
-
-## 🗓️ Roadmap
-
-
-
-  - [x] **Phase 1**: Establish AGX JetPack 6 Hybrid Architecture (ROS 1 + ROS 2)
-
-  - [x] **Phase 2**: Implement Buildx Remote Deployment Workflow
-
-  - [x] **Phase 3**: Integrate Hardware Drivers (Velodyne, RealSense) & Docker Network Passthrough
-
-  - [x] **Phase 4**: Replace RViz with Foxglove Studio for Web-based Viz
-
-  - [ ] **Phase 5**: Deploy Nav2 Stack and bridge with SLAM maps
-
-  - [ ] **Phase 6**: Integrate VLM/RL models into ROS 2 nodes for AI Navigation
-
-## 👥 For New Team Members (One-Time Setup)
-
-If you are new to the project, follow these steps to set up your PC for remote deployment.
-
-### 1\. Generate SSH Key (On PC)
-
-skip this if you already have one.
+If developing on a PC, you can link your Docker CLI directly to the AGX Engine over SSH without compiling locally:
 
 ```bash
-ssh-keygen -t ed25519 -C "your_name@pc"
-```
-
-### 2\. Authorize Key on AGX
-
-Ask the lead for the AGX password, then copy your key:
-
-```bash
+# 1. Share SSH keys
 ssh-copy-id systemlabagx@<AGX_IP>
-```
 
-### 3\. Create Docker Remote Context
-
-This allows your local Docker CLI to control the Docker Engine on the AGX.
-
-```bash
-# Replace <AGX_IP> with the actual IP (e.g., 192.168.200.112)
+# 2. Create Docker context
 docker context create agx_remote --docker "host=ssh://systemlabagx@<AGX_IP>"
 
-# Verify connection
-docker --context agx_remote info
+# 3. Switch context to AGX
+docker context use agx_remote
+
+# 4. Use Makefile remotely
+make up
 ```
-### Remote Deployment (PC -\> AGX)
+*(The Makefile will Auto-Detect the `agx` context and load `.env.agx` / `docker-compose.yaml` accordingly).*
 
-***Best for:** Clean builds, environment updates, and deploying from powerful PC.*
-
-1.  Switch your Docker context to the AGX:
-    ```bash
-    docker context use agx_remote
-    ```
-2.  Switch back to local when done:
-    ```bash
-    docker context use default
-    ```
-> **Note**: In PC mode, containers use the code baked into the Docker Image. Local source files on the AGX are **not** mounted.
------
-
+---
 **Maintainer**: NYCUSystemLab

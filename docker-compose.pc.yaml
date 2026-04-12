@@ -1,0 +1,11 @@
+# ==============================================================================
+#  AGX ROS - PC Orchestrator (Docker Desktop / WSL2 / Ubuntu PC)
+#  base compose 不含 network_mode: host，預設用 compose project network
+#  foxglove 額外加 ports mapping 讓 Docker Desktop 能連進去
+# ==============================================================================
+
+include:
+    - path: ./planning/docker-compose.yaml
+    - path:
+          - ./foxglove/docker-compose.yaml
+          - ./foxglove/docker-compose.pc.yaml

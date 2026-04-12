@@ -1,0 +1,4 @@
+services:
+  foxglove:
+    ports:
+      - "8765:8765"

@@ -1,0 +1,37 @@
+# ============================================================
+#  urg_node2 參數覆寫檔 (Override)
+# ============================================================
+#  此檔案僅覆寫需要客製化的參數，其餘參數維持 urg_node2 預設值。
+#  遵循 ROS 2 Open-Closed Principle：
+#    ✅ 第三方套件 (urg_node2) 保持唯讀，不修改其原始碼或預設設定
+#    ✅ 自訂參數集中管理於 car_control Package 內
+#    ✅ 透過 Launch File 注入覆寫
+# ============================================================
+
+urg_node2:
+  ros__parameters:
+    # ---------- 網路設定 ----------
+    # 原始預設值為 192.168.0.10
+    ip_address: '192.168.1.201'
+    ip_port: 10940
+
+    # ---------- 座標框架 ----------
+    frame_id: 'laser'
+
+    # ---------- 時間校正 ----------
+    calibrate_time: false
+    synchronize_time: false
+
+    # ---------- 發布選項 ----------
+    publish_intensity: false
+    publish_multiecho: false
+
+    error_limit : 4
+    error_reset_period : 5.0
+    diagnostics_tolerance : 0.05
+    diagnostics_window_time : 5.0
+    time_offset : 0.0
+    angle_min : -3.14
+    angle_max : 3.14
+    skip : 0
+    cluster : 1

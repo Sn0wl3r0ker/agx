@@ -1,0 +1,54 @@
+services:
+  # =========================================
+  # 7. Cosmos-Reason2 服務 (Jetson AGX Orin / JP6 / CUDA 12.6)
+  # 參考:
+  # - https://github.com/Sn0wl3r0ker/cosmos-reason2/tree/feature/jetson-agx-orin-support
+  # - docs/jetson-orin-setup.md
+  # =========================================
+  cosmos:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: agx_ros/cosmos:latest
+    container_name: cosmos
+    runtime: nvidia
+    network_mode: host
+    ipc: host
+    shm_size: "40g"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+      - HF_HOME=/data/hf
+      - TRANSFORMERS_CACHE=/data/hf
+      - CUDA_HOME=/usr/local/cuda
+      - TRITON_PTXAS_PATH=/usr/local/cuda/bin/ptxas
+      - HF_TOKEN=${HF_TOKEN:-}
+      - ROS_DOMAIN_ID=0
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - PYTHONPATH=/opt/vla_demo
+    privileged: false
+    devices:
+      - /dev/snd
+      - /dev/bus/usb
+      - /dev/video0
+      - /dev/media0
+      - /dev/video1
+      - /dev/video2
+      - /dev/video3
+      - /dev/video4
+      - /dev/video5
+    volumes:
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /run/jtop.sock:/run/jtop.sock
+      - /home/systemlabagx/disk/workspaces/data:/data
+      - /home/systemlabagx/disk/workspaces/data/cosmos_cache:/root/.cache
+      - /home/systemlabagx/disk/workspaces:/workspaces
+      # - ./VLA:/opt/vla_demo
+      - /home/systemlabagx/disk/agx/cosmos/video:/workspaces/cosmos_ws/video
+    working_dir: /workspaces/cosmos_ws
+    stdin_open: true
+    tty: true
+    command: ["bash", "-lc", "sleep infinity"]

@@ -37,8 +37,10 @@ RUN pip3 install -U jetson-stats
 RUN pip3 install --no-cache-dir \
     pillow \
     transformers \
-    timm \ 
-    accelerate
+    timm \
+    accelerate \
+    pyyaml \
+    uvicorn[standard]
 
 # 安裝 CLIP (ftfy 和 regex 是相依套件)
 RUN pip3 install --no-cache-dir ftfy regex
@@ -52,6 +54,7 @@ WORKDIR /data
 
 # 8. 把 source setup.bash 寫入
 RUN echo "source /opt/ros/install/setup.bash" >> /root/.bashrc
+RUN echo "export PYTHONPATH=/opt/vla_demo:\$PYTHONPATH" >> /root/.bashrc
 
 # 9. 預設指令
 CMD ["bash", "-l"]

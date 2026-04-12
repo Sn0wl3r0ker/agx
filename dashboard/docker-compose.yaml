@@ -1,0 +1,16 @@
+services:
+  dashboard:
+    container_name: dashboard
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${AGX_PROJECT_ROOT:-/home/systemlabagx/disk/agx}:/project:ro
+    environment:
+      - PROJECT_NAME=agx_ros
+      - DASHBOARD_PORT=8080
+      - DEPLOY_MODE=${DEPLOY_MODE:-pc}
+    restart: unless-stopped

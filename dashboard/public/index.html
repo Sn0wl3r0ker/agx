@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGX ROS Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a2035;
+      --bg-card-hover: #1f2847;
+      --border: #2a3555;
+      --text-primary: #e8eaf0;
+      --text-secondary: #8892a8;
+      --text-muted: #5a6480;
+      --accent-blue: #3b82f6;
+      --accent-blue-glow: rgba(59, 130, 246, 0.3);
+      --accent-green: #22c55e;
+      --accent-green-glow: rgba(34, 197, 94, 0.2);
+      --accent-red: #ef4444;
+      --accent-red-glow: rgba(239, 68, 68, 0.2);
+      --accent-yellow: #f59e0b;
+      --accent-yellow-glow: rgba(245, 158, 11, 0.2);
+      --accent-purple: #a855f7;
+      --accent-purple-glow: rgba(168, 85, 247, 0.2);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+      --transition: all 0.2s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      background: linear-gradient(135deg, var(--bg-secondary), #0f172a);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ws-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-red);
+      transition: background 0.3s;
+    }
+
+    .ws-indicator.connected {
+      background: var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 var(--accent-green-glow);
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px transparent;
+      }
+    }
+
+    .ws-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ─── Layout ─── */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 28px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin: 24px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ─── Service Cards ─── */
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+
+    .service-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .service-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-blue);
+    }
+
+    .service-card:hover::before {
+      opacity: 1;
+    }
+
+    .service-card.running {
+      border-color: var(--accent-green);
+    }
+
+    .service-card.running::before {
+      background: var(--accent-green);
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      font-size: 22px;
+    }
+
+    .card-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .card-folder {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .status-dot.running {
+      background: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green-glow);
+    }
+
+    .status-dot.exited {
+      background: var(--accent-red);
+    }
+
+    .card-status {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      min-height: 16px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 11px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-green {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .btn-green:hover {
+      background: var(--accent-green-glow);
+    }
+
+    .btn-red {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    .btn-red:hover {
+      background: var(--accent-red-glow);
+    }
+
+    .btn-yellow {
+      border-color: var(--accent-yellow);
+      color: var(--accent-yellow);
+    }
+
+    .btn-yellow:hover {
+      background: var(--accent-yellow-glow);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+      border: none;
+      color: white;
+      padding: 7px 18px;
+      font-size: 12px;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.15);
+    }
+
+    .bulk-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    /* ─── Tasks ─── */
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+    }
+
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--transition);
+    }
+
+    .task-card:hover {
+      border-color: var(--accent-blue);
+      background: var(--bg-card-hover);
+    }
+
+    .task-card.active {
+      border-color: var(--accent-green);
+    }
+
+    .task-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .task-icon {
+      font-size: 20px;
+    }
+
+    .task-name {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .task-cmd {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: monospace;
+      margin-top: 2px;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ─── Controller ─── */
+    .controller-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .controller-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .controller-grid {
+      display: inline-grid;
+      grid-template-columns: repeat(3, 60px);
+      grid-template-rows: repeat(3, 60px);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .ctrl-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .ctrl-btn:hover {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .ctrl-btn:active,
+    .ctrl-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+      transform: scale(0.95);
+    }
+
+    .ctrl-btn.ctrl-stop {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    .ctrl-btn.ctrl-stop:active,
+    .ctrl-btn.ctrl-stop.active {
+      background: var(--accent-red);
+      color: white;
+    }
+
+    .ctrl-sub {
+      font-size: 9px;
+      font-weight: 400;
+      opacity: 0.6;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .speed-control input[type=range] {
+      width: 140px;
+      accent-color: var(--accent-blue);
+    }
+
+    .ctrl-status {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    /* ─── Log Viewer ─── */
+    .log-viewer {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-top: 14px;
+      max-height: 280px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #a0f0a0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+    }
+
+    .log-viewer.visible {
+      display: block;
+    }
+
+    /* ─── Sessions ─── */
+    .sessions-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      min-height: 28px;
+    }
+
+    .session-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--accent-green-glow);
+      border: 1px solid var(--accent-green);
+      font-size: 11px;
+      color: var(--accent-green);
+      font-weight: 500;
+    }
+
+    .session-tag .kill-x {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .session-tag .kill-x:hover {
+      opacity: 1;
+    }
+
+    .no-sessions {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ─── Toast ─── */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 1000;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 12px;
+      box-shadow: var(--shadow);
+      animation: slideIn 0.3s ease;
+      max-width: 380px;
+    }
+
+    .toast.success {
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .toast.error {
+      border-left: 3px solid var(--accent-red);
+    }
+
+    .toast.info {
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 14px;
+      }
+
+      .service-grid,
+      .task-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        padding: 10px 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>🚀 AGX ROS Dashboard</h1>
+    <div class="header-right">
+      <button class="btn btn-red" onclick="shutdownDashboard()" style="font-size:11px;">⏻ 關閉 Dashboard</button>
+      <div class="ws-indicator" id="wsIndicator"></div>
+      <span class="ws-label" id="wsLabel">Disconnected</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Bulk -->
+    <div class="section-title">Docker 服務</div>
+    <div class="bulk-bar">
+      <button class="btn btn-primary" onclick="allService('up')">▶ 全部啟動</button>
+      <button class="btn btn-red" onclick="allService('down')">⏹ 全部停止</button>
+      <button class="btn" onclick="refreshNow()">🔄 重新整理</button>
+      <button class="btn" onclick="toggleLogs()">📋 Logs</button>
+    </div>
+    <div class="service-grid" id="serviceGrid"></div>
+    <div class="log-viewer" id="logViewer"></div>
+
+    <!-- Tasks -->
+    <div class="section-title">Control 任務 (ROS 1)</div>
+    <div class="task-grid" id="controlTasks"></div>
+
+    <div class="section-title">Planning 任務 (ROS 2)</div>
+    <div class="task-grid" id="planningTasks"></div>
+
+    <!-- Joystick -->
+    <div class="section-title">🎮 虛擬搖桿控制</div>
+    <div class="controller-panel">
+      <div class="controller-info">按住 WASD 或點擊按鈕 · 空白鍵急停 · 透過 WebSocket 即時傳輸</div>
+      <div class="controller-grid">
+        <div></div>
+        <button class="ctrl-btn" data-dir="w">W<br><span class="ctrl-sub">前進</span></button>
+        <div></div>
+        <button class="ctrl-btn" data-dir="a">A<br><span class="ctrl-sub">左轉</span></button>
+        <button class="ctrl-btn ctrl-stop" data-dir="stop">⏹<br><span class="ctrl-sub">停止</span></button>
+        <button class="ctrl-btn" data-dir="d">D<br><span class="ctrl-sub">右轉</span></button>
+        <div></div>
+        <button class="ctrl-btn" data-dir="s">S<br><span class="ctrl-sub">後退</span></button>
+        <div></div>
+      </div>
+      <div class="speed-control">
+        <label>速度: <input type="range" id="speedSlider" min="0.1" max="1.0" step="0.1" value="0.3"></label>
+        <span id="speedValue">0.3 m/s</span>
+      </div>
+      <div class="ctrl-status" id="ctrlStatus">待命</div>
+    </div>
+
+    <!-- Sessions -->
+    <div class="section-title">執行中的 Sessions</div>
+    <div class="sessions-bar" id="sessionsBar">
+      <span class="no-sessions">載入中...</span>
+    </div>
+
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ─── State ───
+    let SERVICES = {};
+    let TASKS = {};
+    let containerStatuses = {};
+    let activeSessions = [];
+    let ws = null;
+
+    // ─── WebSocket ───
+    function connectWS() {
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      ws = new WebSocket(`${proto}://${location.host}`);
+
+      ws.onopen = () => {
+        document.getElementById('wsIndicator').classList.add('connected');
+        document.getElementById('wsLabel').textContent = 'Connected';
+      };
+
+      ws.onclose = () => {
+        document.getElementById('wsIndicator').classList.remove('connected');
+        document.getElementById('wsLabel').textContent = 'Reconnecting...';
+        setTimeout(connectWS, 2000);
+      };
+
+      ws.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          if (msg.type === 'status') {
+            containerStatuses = msg.containers || {};
+            activeSessions = msg.sessions || [];
+            renderServices();
+            renderTasks();
+            renderSessions();
+          }
+        } catch { }
+      };
+    }
+
+    // ─── API helpers ───
+    async function api(method, path, body) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(path, opts);
+      return r.json();
+    }
+
+    function toast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    // ─── Render ───
+    function renderServices() {
+      const grid = document.getElementById('serviceGrid');
+      grid.innerHTML = '';
+      for (const [folder, svc] of Object.entries(SERVICES)) {
+        const info = containerStatuses[svc.container];
+        const state = info ? info.state : 'stopped';
+        const statusText = info ? info.status : 'Not running';
+        const card = document.createElement('div');
+        card.className = `service-card ${state}`;
+        card.innerHTML = `
+      <div class="card-header">
+        <div class="card-title">
+          <span class="card-icon">${svc.icon}</span>
+          <div><div class="card-name">${svc.name}</div><div class="card-folder">${folder}/</div></div>
+        </div>
+        <div class="status-dot ${state}"></div>
+      </div>
+      <div class="card-status">${statusText}</div>
+      <div class="card-actions">
+        <button class="btn btn-green" onclick="svcAction('up','${folder}')" ${state === 'running' ? 'disabled' : ''}>▶ Start</button>
+        <button class="btn btn-red" onclick="svcAction('down','${folder}')" ${state !== 'running' ? 'disabled' : ''}>⏹ Stop</button>
+        <button class="btn btn-yellow" onclick="svcAction('build','${folder}')">🔨 Build</button>
+        <button class="btn" onclick="svcAction('rebuild','${folder}')">♻️ Rebuild</button>
+        <button class="btn" onclick="showLogs('${folder}')">📋</button>
+      </div>`;
+        grid.appendChild(card);
+      }
+    }
+
+    function renderTasks() {
+      for (const [group, data] of Object.entries(TASKS)) {
+        const gridId = group === 'control' ? 'controlTasks' : 'planningTasks';
+        const grid = document.getElementById(gridId);
+        grid.innerHTML = '';
+        for (const [id, t] of Object.entries(data.items)) {
+          const active = activeSessions.includes(id);
+          const card = document.createElement('div');
+          card.className = `task-card ${active ? 'active' : ''}`;
+          card.innerHTML = `
+        <div class="task-info">
+          <span class="task-icon">${t.icon}</span>
+          <div><div class="task-name">${t.name}</div><div class="task-cmd">${t.cmd}</div></div>
+        </div>
+        <div>
+          ${active
+              ? `<button class="btn btn-red" onclick="taskStop('${id}')">⏹</button>
+                 <button class="btn" style="margin-left:4px" onclick="showTaskLogs('${id}')">📋 Logs</button>`
+              : `<button class="btn btn-green" onclick="taskLaunch('${group}','${id}')">▶ Start</button>`}
+        </div>`;
+          grid.appendChild(card);
+        }
+      }
+    }
+
+    function renderSessions() {
+      const bar = document.getElementById('sessionsBar');
+      if (!activeSessions.length) {
+        bar.innerHTML = '<span class="no-sessions">沒有執行中的任務</span>';
+        return;
+      }
+      bar.innerHTML = activeSessions.map(s =>
+        `<span class="session-tag">${s}<span class="kill-x" onclick="taskStop('${s}')" title="Terminate">✕</span></span>`
+      ).join('') + `<button class="btn btn-red" style="margin-left:6px" onclick="taskStop('all')">全部停止</button>`;
+    }
+
+    // ─── Actions ───
+    async function svcAction(action, folder) {
+      toast(`${action} ${folder}...`, 'info');
+      const r = await api('POST', `/api/service/${action}`, { folder });
+      toast(r.ok ? `${folder} ${action} ✓` : `失敗: ${r.stderr || r.error}`, r.ok ? 'success' : 'error');
+    }
+
+    async function allService(action) {
+      toast(`${action} all...`, 'info');
+      const r = await api('POST', `/api/service-all/${action}`);
+      toast(r.ok ? `All ${action} ✓` : `失敗: ${r.stderr}`, r.ok ? 'success' : 'error');
+    }
+
+    async function taskLaunch(group, task) {
+      toast(`啟動 ${task}...`, 'info');
+      const r = await api('POST', '/api/task/launch', { group, task });
+      toast(r.ok ? `${task} ✓` : `失敗: ${r.error}`, r.ok ? 'success' : 'error');
+    }
+
+    async function taskStop(task) {
+      const r = await api('POST', '/api/task/stop', { task });
+      toast(r.ok ? '已停止 ✓' : '失敗', r.ok ? 'success' : 'error');
+    }
+
+    async function showLogs(folder) {
+      const v = document.getElementById('logViewer');
+      v.classList.add('visible');
+      v.textContent = 'Loading...';
+      const r = await api('GET', `/api/logs?folder=${folder}&lines=80`);
+      v.textContent = r.stdout || r.stderr || 'No logs';
+      v.scrollTop = v.scrollHeight;
+    }
+
+    async function showTaskLogs(task) {
+      const v = document.getElementById('logViewer');
+      v.classList.add('visible');
+      v.textContent = 'Loading...';
+      const r = await api('GET', `/api/task/logs?task=${task}`);
+      v.textContent = r.stdout || r.stderr || 'No logs';
+      v.scrollTop = v.scrollHeight;
+    }
+
+    function toggleLogs() {
+      const v = document.getElementById('logViewer');
+      v.classList.contains('visible') ? v.classList.remove('visible') : showLogs('');
+    }
+
+    async function refreshNow() {
+      const r = await api('GET', '/api/status');
+      containerStatuses = r.containers || {};
+      activeSessions = r.sessions || [];
+      renderServices();
+      renderTasks();
+      renderSessions();
+    }
+
+    async function shutdownDashboard() {
+      if (!confirm('確定要關閉 Dashboard？')) return;
+      toast('Dashboard 關閉中...', 'info');
+      await api('POST', '/api/dashboard/shutdown');
+    }
+
+    // ─── Virtual Controller ───
+    let ctrlInterval = null;
+    let currentDir = null;
+    const speedSlider = document.getElementById('speedSlider');
+    const speedValue = document.getElementById('speedValue');
+    const ctrlStatus = document.getElementById('ctrlStatus');
+
+    speedSlider.addEventListener('input', () => {
+      speedValue.textContent = speedSlider.value + ' m/s';
+    });
+
+    function getVel(dir) {
+      const spd = parseFloat(speedSlider.value);
+      const turn = spd * 3;
+      switch (dir) {
+        case 'w': return { lx: spd, az: 0 };
+        case 's': return { lx: -spd, az: 0 };
+        case 'a': return { lx: 0, az: turn };
+        case 'd': return { lx: 0, az: -turn };
+        default: return { lx: 0, az: 0 };
+      }
+    }
+
+    function sendVel(dir) {
+      const v = getVel(dir);
+      ctrlStatus.textContent = `cmd_vel: lx=${v.lx.toFixed(2)}, az=${v.az.toFixed(2)}`;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'cmd_vel', ...v }));
+      }
+    }
+
+    function startCtrl(dir) {
+      if (currentDir === dir) return;
+      stopCtrl();
+      currentDir = dir;
+      document.querySelector(`[data-dir="${dir}"]`)?.classList.add('active');
+      sendVel(dir);
+      ctrlInterval = setInterval(() => sendVel(dir), 100);
+    }
+
+    function stopCtrl() {
+      if (ctrlInterval) clearInterval(ctrlInterval);
+      ctrlInterval = null;
+      currentDir = null;
+      document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+      sendVel('stop');
+      ctrlStatus.textContent = '待命';
+    }
+
+    document.querySelectorAll('.ctrl-btn').forEach(btn => {
+      const dir = btn.dataset.dir;
+      const start = dir === 'stop' ? stopCtrl : () => startCtrl(dir);
+      btn.addEventListener('mousedown', start);
+      btn.addEventListener('touchstart', (e) => { e.preventDefault(); start(); });
+      btn.addEventListener('mouseup', stopCtrl);
+      btn.addEventListener('mouseleave', () => { if (currentDir === dir) stopCtrl(); });
+      btn.addEventListener('touchend', stopCtrl);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      const k = e.key.toLowerCase();
+      if ('wasd'.includes(k)) { e.preventDefault(); startCtrl(k); }
+      if (k === ' ') { e.preventDefault(); stopCtrl(); }
+    });
+    document.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if ('wasd'.includes(k) && currentDir === k) stopCtrl();
+    });
+
+    // ─── Init ───
+    (async () => {
+      const cfg = await api('GET', '/api/config');
+      SERVICES = cfg.services;
+      TASKS = cfg.tasks;
+      await refreshNow();
+      connectWS();
+    })();
+  </script>
+</body>
+
+</html>

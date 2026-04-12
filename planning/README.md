@@ -26,6 +26,45 @@ elif [ "$ARCH" = "x86_64" ]; then
     fi
 fi
 ```
+### Sensor Bringup (底盤控制 + 雷達)
 ```bash
-ros2 launch urg_node2 urg_node2.launch.py
+ros2 launch car_control car_sensor.launch.py
+```
+### keyboard control
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
+
+### save map
+```bash
+ros2 run nav2_map_server map_saver_cli -f /root/ros2_ws/src/car_control/config/my_map
+```
+
+---
+
+### RealSense D455 (IMU + RGB)
+啟動相機並開啟 IMU 融合模式（加速度計 + 陀螺儀合併為單一 `/camera/camera/imu` Topic）：
+```bash
+ros2 launch realsense2_camera rs_launch.py \
+  enable_gyro:=true \
+  enable_accel:=true \
+  unite_imu_method:=2 \
+  enable_sync:=true
+```
+
+### EKF 感測器融合 (robot_localization)
+融合 `/raw_odom`（輪式里程計 X 速度）與 `/camera/camera/imu`（IMU Yaw 角速度），輸出 `/odometry/filtered` 並發布 `odom → base_footprint` TF：
+```bash
+ros2 launch car_control ekf.launch.py
+```
+
+### SLAM 建圖
+```bash
+ros2 launch car_control slam_bringup.launch.py
+```
+
+### Nav2 導航
+```bash
+ros2 launch nav2_bringup navigation_launch.py \
+  map:=/root/ros2_ws/src/car_control/config/my_map.yaml
 ```

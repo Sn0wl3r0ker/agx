@@ -1,0 +1,39 @@
+services:
+  # =========================================
+  # ROS 2 高階規劃 (Planning)
+  # =========================================
+  planning:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: agx_ros/planning:latest
+    container_name: planning
+
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - ROS_DOMAIN_ID=0
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/tmp/.docker.xauth
+    # Cgroup 設備白名單
+    device_cgroup_rules:
+      - 'c 189:* rmw' #  USB 匯流排 (libusb 通訊用)
+      - 'c 81:* rmw' #  Video4Linux 設備 (深度圖、RGB 影像)
+      - 'c 510:* rmw' #  HID 設備 (D455 的 IMU 角速度, Jetson 上 major=510)
+      - 'c 166:* rmw' #  ttyACM (Arduino)
+      - 'c 188:* rmw' #  ttyUSB (LiDAR 等)
+
+    volumes:
+      - /run/jtop.stats.sock:/run/jtop.stats.sock
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      # 分別掛載開發的 Package，避免覆蓋掉被放在 src 中的 urg_node2
+      - ./src/car_control:/root/ros2_ws/src/car_control
+      - ./src/rl_navigator:/root/ros2_ws/src/rl_navigator
+      - ./src/models:/root/ros2_ws/src/models
+      - ../cosmos/VLA:/root/ros2_ws/src/vla_demo
+    tty: true
+    stdin_open: true

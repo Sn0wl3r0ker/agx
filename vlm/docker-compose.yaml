@@ -1,0 +1,34 @@
+services:
+  # =========================================
+  # Isaac ROS 視覺加速服務
+  # =========================================
+  vlm:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: agx_ros/vlm:latest
+    container_name: vlm
+    profiles: [ "agx_mode" ]
+    network_mode: host
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - ROS_DOMAIN_ID=0
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ISAAC_ROS_WS=/workspaces/isaac_ros-dev
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/tmp/.docker.xauth
+      - EGL_PLATFORM=device          # VPI 需要 EGL，headless 環境下必須用 device platform
+    privileged: true
+    runtime: nvidia
+    volumes:
+      - /dev/:/dev/
+      - /run/jtop.stats.sock:/run/jtop.stats.sock
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - /home/systemlabagx/disk/workspaces/isaac_ros-dev:/workspaces/isaac_ros-dev
+    stdin_open: true
+    tty: true
+    command: /bin/bash -c "while true; do sleep 3600; done"

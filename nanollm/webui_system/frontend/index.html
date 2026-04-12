@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROS2 任務指揮 WebUI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", Arial, sans-serif;
+      background: #f4f7fb;
+      color: #1f2937;
+    }
+
+    .wrap {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 24px;
+      min-height: 100vh;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn-main {
+      background: #111827;
+      color: white;
+    }
+
+    .btn-sub {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .chat-box {
+      border: 1px solid #e5e7eb;
+      border-radius: 24px;
+      overflow: hidden;
+      background: #f8fafc;
+    }
+
+    .messages {
+      height: 62vh;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .msg-row {
+      display: flex;
+    }
+
+    .msg-row.user {
+      justify-content: flex-end;
+    }
+
+    .msg-row.ai {
+      justify-content: flex-start;
+    }
+
+    .bubble {
+      max-width: 82%;
+      border-radius: 20px;
+      padding: 14px 16px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .bubble.user {
+      background: #111827;
+      color: white;
+    }
+
+    .bubble.ai {
+      background: white;
+      border: 1px solid #e5e7eb;
+      color: #111827;
+    }
+
+    .meta {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-bottom: 6px;
+    }
+
+    .input-bar {
+      display: flex;
+      gap: 12px;
+      padding: 14px;
+      border-top: 1px solid #e5e7eb;
+      background: white;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 15px;
+      resize: vertical;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .status-block {
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .status-blue {
+      background: #eff6ff;
+    }
+
+    .status-yellow {
+      background: #fffbeb;
+    }
+
+    .status-green {
+      background: #ecfdf5;
+    }
+
+    .kv {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    .log {
+      background: #0f172a;
+      color: #86efac;
+      border-radius: 18px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 12px;
+      height: 240px;
+      overflow-y: auto;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      background: #16a34a;
+      margin-bottom: 10px;
+    }
+
+    .badge.offline {
+      background: #64748b;
+    }
+
+    .advanced-area {
+      max-width: 1360px;
+      margin: 0 auto 24px auto;
+      padding: 0 24px 24px 24px;
+    }
+
+    details {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      user-select: none;
+      outline: none;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .small-btn {
+      margin-top: 10px;
+      background: #111827;
+      color: white;
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+
+    @media (max-width: 980px) {
+      .wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .messages {
+        height: 52vh;
+      }
+
+      .grid2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="title">ROS2 任務指揮 WebUI</div>
+      <div class="subtitle">使用者輸入任務，系統固定格式回覆；異常事件由 ROS2 flag 觸發後即時推送。</div>
+
+      <div id="wsBadge" class="badge offline">WebSocket 未連線</div>
+
+      <div class="toolbar">
+        <button class="btn-sub" onclick="clearChat()">清空對話</button>
+      </div>
+
+      <div class="chat-box">
+        <div id="messages" class="messages"></div>
+        <div class="input-bar">
+          <input id="commandInput" type="text" value="請到後花園去做巡檢" placeholder="例如：請到後花園去做巡檢" />
+          <button class="btn-main" onclick="sendCommand()">送出</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="panel-title">任務摘要</div>
+
+        <div class="status-block status-blue">
+          <div><strong>最近任務</strong></div>
+          <div class="kv" id="taskAsset">設備：-</div>
+          <div class="kv" id="taskLocation">目標地點：-</div>
+        </div>
+
+        <div class="status-block status-yellow">
+          <div><strong>異常事件</strong></div>
+          <div class="kv" id="eventType">事件：-</div>
+          <div class="kv" id="eventAction">處置：-</div>
+        </div>
+
+        <div class="status-block status-green">
+          <div><strong>ROS2 Topic</strong></div>
+          <div class="kv">/llm/request</div>
+          <div class="kv">/llm/response</div>
+          <div class="kv">/llm/status</div>
+          <div class="kv">/llm/system_prompt</div>
+          <div class="kv">/llm/video_uri</div>
+          <div class="kv">/llm/event_flag</div>
+        </div>
+
+        <div class="status-block status-blue">
+          <div><strong>最新狀態</strong></div>
+          <div class="kv" id="latestStatus">狀態：待命中</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 24px;">
+        <div class="panel-title">即時紀錄</div>
+        <div id="log" class="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="advanced-area">
+    <details>
+      <summary>進階設定（預設收合）</summary>
+
+      <div class="grid2">
+        <div>
+          <div class="panel-title" style="margin-top: 16px;">System Prompt</div>
+          <textarea id="systemPromptInput" rows="6" placeholder="輸入要發布到 /llm/system_prompt 的文字"></textarea>
+          <button class="small-btn" onclick="saveSystemPrompt()">發布 System Prompt</button>
+        </div>
+
+        <div>
+          <div class="panel-title" style="margin-top: 16px;">Video URI</div>
+          <textarea id="videoUriInput" rows="6" placeholder="例如：file:///shared_media/test.mp4"></textarea>
+          <button class="small-btn" onclick="saveVideoUri()">發布 Video URI</button>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <script>
+    const messagesEl = document.getElementById("messages");
+    const logEl = document.getElementById("log");
+    const wsBadge = document.getElementById("wsBadge");
+
+    const taskAssetEl = document.getElementById("taskAsset");
+    const taskLocationEl = document.getElementById("taskLocation");
+    const eventTypeEl = document.getElementById("eventType");
+    const eventActionEl = document.getElementById("eventAction");
+    const latestStatusEl = document.getElementById("latestStatus");
+
+    const systemPromptInput = document.getElementById("systemPromptInput");
+    const videoUriInput = document.getElementById("videoUriInput");
+
+    function appendLog(text) {
+      const line = document.createElement("div");
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      logEl.prepend(line);
+    }
+
+    function addMessage(role, text, tag = "") {
+      const row = document.createElement("div");
+      row.className = `msg-row ${role}`;
+
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${role}`;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = `${role === "user" ? "使用者" : "AI"}${tag ? " • " + tag : ""}`;
+
+      const content = document.createElement("div");
+      content.textContent = text;
+
+      bubble.appendChild(meta);
+      bubble.appendChild(content);
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function clearChat() {
+      messagesEl.innerHTML = "";
+      addMessage("ai", "系統待命中。請輸入任務，例如：請到後花園去做巡檢。", "System");
+      appendLog("chat cleared");
+    }
+
+    async function sendCommand() {
+      const input = document.getElementById("commandInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage("user", text, "任務輸入");
+      appendLog(`POST /api/command <- ${text}`);
+
+      try {
+        const resp = await fetch("/api/command", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const data = await resp.json();
+
+        if (!data.ok) {
+          appendLog(`command failed: ${JSON.stringify(data)}`);
+        }
+      } catch (e) {
+        appendLog(`command failed: ${e}`);
+      }
+
+      input.value = "";
+    }
+
+    async function saveSystemPrompt() {
+      const text = systemPromptInput.value.trim();
+      try {
+        const resp = await fetch("/api/system_prompt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const data = await resp.json();
+        appendLog(`system_prompt -> ${JSON.stringify(data)}`);
+      } catch (e) {
+        appendLog(`save system_prompt failed: ${e}`);
+      }
+    }
+
+    async function saveVideoUri() {
+      const text = videoUriInput.value.trim();
+      try {
+        const resp = await fetch("/api/video_uri", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const data = await resp.json();
+        appendLog(`video_uri -> ${JSON.stringify(data)}`);
+      } catch (e) {
+        appendLog(`save video_uri failed: ${e}`);
+      }
+    }
+
+    function connectWS() {
+      const scheme = location.protocol === "https:" ? "wss" : "ws";
+      const ws = new WebSocket(`${scheme}://${location.host}/ws`);
+
+      ws.onopen = () => {
+        wsBadge.textContent = "WebSocket 已連線";
+        wsBadge.classList.remove("offline");
+        appendLog("WebSocket connected");
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "system") {
+          addMessage("ai", data.text, "System");
+        } else if (data.type === "ai_reply") {
+          addMessage("ai", data.text, "System");
+          appendLog(`AI reply -> ${data.text}`);
+        } else if (data.type === "task") {
+          if (data.task) {
+            taskAssetEl.textContent = `設備：${data.task.asset || "-"}`;
+            taskLocationEl.textContent = `目標地點：${data.task.target_location || "-"}`;
+            appendLog(`task -> ${JSON.stringify(data.task)}`);
+          }
+        } else if (data.type === "status") {
+          latestStatusEl.textContent = `狀態：${data.text}`;
+          appendLog(`status -> ${data.text}`);
+        } else if (data.type === "event") {
+          eventTypeEl.textContent = `事件：${data.event_type || "-"}`;
+          eventActionEl.textContent = `處置：${data.action || "-"}`;
+          appendLog(`event -> ${data.text}`);
+        } else if (data.type === "system_prompt") {
+          systemPromptInput.value = data.text || "";
+          appendLog(`sync system_prompt`);
+        } else if (data.type === "video_uri") {
+          videoUriInput.value = data.text || "";
+          appendLog(`sync video_uri`);
+        }
+      };
+
+      ws.onclose = () => {
+        wsBadge.textContent = "WebSocket 未連線";
+        wsBadge.classList.add("offline");
+        appendLog("WebSocket closed, reconnecting...");
+        setTimeout(connectWS, 1500);
+      };
+
+      ws.onerror = () => {
+        appendLog("WebSocket error");
+      };
+    }
+
+    clearChat();
+    connectWS();
+
+    document.getElementById("commandInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendCommand();
+    });
+  </script>
+</body>
+
+</html>
